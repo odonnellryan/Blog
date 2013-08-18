@@ -1,0 +1,239 @@
+html, body, body div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, b, i, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, figure, footer, header, hgroup, menu, nav, section, time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    font-size: 100%;
+    vertical-align: baseline;
+    background: transparent;
+}
+
+body {
+    font-family: 'Lato', sans-serif;
+    text-decoration: none;
+    -webkit-text-stroke: .25px;
+}
+
+small {
+    color:gray;
+}
+
+.main {
+    max-width:1200px;
+    margin:0px auto;
+}
+
+.header {
+    background-color: #fff;
+    font-size: 1.5em;
+    padding: 1em;
+
+}
+
+.post-wrapper {
+    text-align: center;
+    margin-top: 1em;
+    width:100%;
+    display: block;
+}
+
+.post-body {
+    width:100%;
+    padding-left:4em;
+    text-align: left;
+    float:left;
+}
+
+.post-title {
+    width:100%;
+    float:left;
+    text-align: left;
+    width:100%;
+    margin-bottom: 1em;
+}
+
+a {
+    text-decoration: none;
+}
+
+div.photo a{
+    float: left;
+    background-color: lightgray;
+    background-image: url('imgs/ryan.jpg');
+    background-size: 7em;
+    width:7em;
+    height:7em;
+    border-radius: 7em;
+    margin: 1em;
+    margin-right: 3em;
+}
+
+.title-bar {
+    margin:1em;
+}
+
+blockquote {
+	margin: 1em 3em;
+	padding: .5em 1em;
+	border-left: 5px solid #004A66;}
+blockquote p {
+	margin: 0; }
+
+h1, small {
+    line-height: 1em;
+}
+
+h1{
+    font-size: 2em;
+    margin: .2em;
+    color: #000;
+}
+
+h2 a {
+    display:block;
+    float:left;
+    padding-left: 1.5em;
+    font-size:2.5em;
+    color:#000;
+}
+h2 a:hover {
+    color:#000;
+}
+h2 a:hover:after {
+    margin:.25em;
+    color:#000;
+}
+
+a {
+    color:#FF8400;
+}
+
+a:hover {
+    color: #f42a00;
+}
+
+p {
+    margin: 1em;
+}
+
+hr {
+    margin-top: 2em;
+    margin-right:10em;
+    margin-bottom: 2em;
+    border: 0;
+    width:100%;
+    border-bottom: 1px dashed #ccc;
+    background-color: #004A66;
+}
+
+span.tags a{
+    color:#000;
+    font-size: .75em;
+    background-color: #e7e7e7;
+    border-radius: 10px;
+    line-height: 3em;
+    padding:.5em;
+    margin:.5em;
+}
+
+span.tags a:hover {
+    background-color: #79CEED;
+}
+
+.width-50 {
+    width:50%;
+    margin:0px;
+    padding:0px;
+    float:left
+   }
+
+#post_title {
+    padding:1em;
+    width:100%;
+    height:1.5em;
+}
+
+#render_title {
+    padding-left:1em;
+    font-size:3em;
+    color:#000;
+}
+
+#post_body, #render_body {
+    padding:1em;
+    width:100%;
+    height: 20em;
+
+}
+
+.header-bar {
+    margin: 0;
+    padding: 0;
+    width:100%;
+    height:.4em;
+
+}
+
+.red {
+    background-color:#f42a00;
+}
+.blue {
+    background-color: #007099;
+}
+.light-blue {
+    background-color: #79CEED;
+}
+.dark-blue {
+    background-color: #004A66;
+}
+.orange {
+    background-color: #FF8400;
+}
+.gray {
+    background-color: #d0d2d3;
+}
+.light-gray {
+    background-color:#e7e7e7;
+}
+.white {
+    background-color: #fff;
+}
+
+.header-color-box {
+    float:left;
+    width:20%;
+    height:.4em;
+    margin:0;
+    padding:0;
+}
+
+* {
+margin: 0;
+}
+
+
+
+html, body {height: 100%;}
+
+.wrap {min-height: 100%;}
+
+.main {overflow:auto;
+	padding-bottom: 150px;}  /* must be same height as the footer */
+
+.footer {position: relative;
+	margin-top: -150px; /* negative value of footer height */
+	height: 150px;
+	clear:both;
+    background-color: #e7e7e7}
+
+/*Opera Fix*/
+body:before {
+	content:"";
+	height:100%;
+	float:left;
+	width:0;
+	margin-top:-32767px;/
+}
+.footer, .push {
+clear: both;
+}

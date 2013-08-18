@@ -1,0 +1,19 @@
+{% extends "index.html" %}
+{% block body %}
+ <div class="width-50">
+  <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
+  {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
+    {% from "macro.html" import render_field %}
+    <form method=post action="{{ url_for('blog.add') }}">
+      <dl>
+        {{ render_field(form.post_title) }}
+        {{ render_field(form.post_body) }}
+      </dl>
+      <p><input type=submit value="Create Post">
+    </form>
+ </div>
+ <div class="width-50">
+    <div id=render_title> </div>
+    <div id=render_body> </div>
+ </div>
+{% endblock %}

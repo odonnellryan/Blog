@@ -1,0 +1,19 @@
+{% extends "index.html" %}
+        {% block body %}
+            {% from "macro.html" import render_field %}
+            <form method=post action="{{ url_for('blog.commit') }}">
+              <dl>
+                {{ render_field(form.commit) }}
+              </dl>
+              <p><input type=submit value="Create Post">
+            </form>
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <ul class=flashes>
+                {% for message in messages %}
+                  <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+              {% endif %}
+            {% endwith %}
+        {%endblock%}
