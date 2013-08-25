@@ -28,17 +28,14 @@ def login(article=None, username=None):
     if config._login(form.username.data,form.password.data):
         session['LOGGED_IN'] = True
         return redirect(url_for('blog.add'))
-
     else:
-        print config._login(form.username.data,form.password.data)
-        flash('Sorry, you put in the wrong information' + str(form.username.data) + str(form.password.data))
-
+        flash('Sorry, you put in the wrong information')
     return render_template('login.html', form=form)
 
 
 @mod.route('add/', methods=['GET', 'POST'])
 @decorators.requires_login
-def add(username=None,article=None):
+def add():
 
     form = forms.NewPost(request.form)
 
@@ -47,6 +44,30 @@ def add(username=None,article=None):
         return redirect(url_for('blog.index'))
 
     return render_template('add.html',  form=form)
+
+
+@mod.route('edit/<post_id>/', methods=['GET', 'POST'])
+@mod.route('edit/', methods=['GET', 'POST'])
+@decorators.requires_login
+def edit(post_id=None):
+
+    form = forms.NewPost(request.form)
+
+    page_content = None
+
+    if not post_id:
+        page_content = db_mods.get_all_titles_and_ids()
+    else:
+        page_content = db_mods.get_post_content(post_id)
+        form.post_title.data = page_content['title']
+        form.post_body.data = page_content['body']
+        page_content['body_html'] = blog_mods.get_html_content(page_content['body'])
+
+    if request.method == 'POST' and form.validate():
+        db_mods.edit_post(form.post_title.data, form.post_body.data, post_id)
+        return redirect(url_for('blog.index'))
+
+    return render_template('edit.html',  form=form, page_content=page_content, post_id=post_id)
 
 
 @mod.route('commit/', methods=['GET', 'POST'])

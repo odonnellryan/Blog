@@ -1,0 +1,36 @@
+{% extends "index.html" %}
+{% block body %}
+
+  {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
+
+  {% if post_id %}
+  <div class="width-50">
+    <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
+    {% from "macro.html" import render_field %}
+
+    <form method=post action="{{ url_for('blog.edit') }}">
+      <dl>
+        {{ render_field(form.post_title) }}
+        {{ render_field(form.post_body) }}
+      </dl>
+      <p><input type=submit value="Create Post">
+    </form>
+
+    </div>
+    <div class="width-50">
+        <div id=render_title>{{page_content['title']}}</div>
+        <div id=render_body>{{page_content['body_html'] | safe}}</div>
+    </div>
+
+  {% else %}
+        <div class="width-100">
+        {% for key in page_content %}
+            <p>
+                <a href="{{ url_for('blog.edit', post_id = key) }}">{{ page_content[key] }}</a>
+            </p>
+        {% endfor %}
+        </div>
+  {% endif %}
+
+
+{% endblock %}

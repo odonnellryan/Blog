@@ -5,7 +5,7 @@
                         <h2><a id="{{ post.title }}" href="#{{ post.title }}">{{ post.title }}</a></h2>
                     </div>
                     <div class="post-body">
-                        {{ render_html(post.content) | safe }}
+                        {{ render_html(post.body) | safe }}
                     </div>
                     <hr>
                     {%endfor%}

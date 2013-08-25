@@ -10,5 +10,5 @@ class NeoDB(Model):
 class RyanBlog(NeoDB):
     post_id = IntegerField(primary_key=True)
     title = CharField()
-    content = TextField()
+    body = TextField()
     username = CharField()
