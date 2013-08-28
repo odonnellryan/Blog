@@ -6,7 +6,7 @@ import blog_mods
 import db_mods
 from subprocess import call
 
-mod = Blueprint('blog', __name__, url_prefix='/')
+mod = Blueprint('blog', __name__, url_prefix='/admin')
 f_mod = Blueprint('f_blog', __name__, url_prefix='/')
 
 
