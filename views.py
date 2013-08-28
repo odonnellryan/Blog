@@ -1,6 +1,4 @@
 from flask import Blueprint, request, render_template, g, redirect, url_for, session, flash, jsonify
-
-from db_config import RyanBlog
 import decorators
 import config
 import forms
@@ -11,20 +9,28 @@ from subprocess import call
 mod = Blueprint('blog', __name__, url_prefix='/')
 f_mod = Blueprint('f_blog', __name__, url_prefix='/')
 
+
 @mod.route('/', methods=['GET', 'POST'])
 @f_mod.route('/', methods=['GET', 'POST'])
 def index(article=None, username=None):
-    blog_posts = RyanBlog.select()
 
-    posts = [post for post in blog_posts.order_by(RyanBlog.post_id.desc()).limit(10)]
+    posts = db_mods.get_latest_ten_posts()
 
     return render_template('view.html', posts=posts, render_html=blog_mods.get_html_content)
 
 
+@mod.route('admin/', methods=['GET', 'POST'])
+@decorators.requires_login
+def admin(username=None,article=None):
+
+    return render_template('admin.html')
+
+
 @mod.route('login/', methods=['GET', 'POST'])
-@f_mod.route('/', methods=['GET', 'POST'])
 def login(article=None, username=None):
+
     form = forms.Login(request.form)
+
     if config._login(form.username.data,form.password.data):
         session['LOGGED_IN'] = True
         return redirect(url_for('blog.add'))
@@ -52,8 +58,6 @@ def add():
 def edit(post_id=None):
 
     form = forms.NewPost(request.form)
-
-    page_content = None
 
     if not post_id:
         page_content = db_mods.get_all_titles_and_ids()
@@ -85,6 +89,7 @@ def commit(username=None,article=None):
 
 @mod.route('_render_temp_body/', methods=['GET', 'POST'])
 def render_temp_body(username=None,article=None):
+
     try:
         get_markup = blog_mods.get_html_content(request.args.get('post_body'))
         return jsonify(result=get_markup)
@@ -94,9 +99,11 @@ def render_temp_body(username=None,article=None):
 
 @mod.route('_render_temp_title/', methods=['GET', 'POST'])
 def render_temp_title(username=None,article=None):
+
     try:
         get_markup = request.args.get('post_title')
         return jsonify(result=get_markup)
     except:
         return("")
+
 

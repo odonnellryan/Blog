@@ -27,49 +27,28 @@ small {
     background-color: #fff;
     font-size: 1.5em;
     padding: 1em;
-
-}
-
-.post-wrapper {
-    text-align: center;
-    margin-top: 1em;
-    width:100%;
-    display: block;
-}
-
-.post-body {
-    width:100%;
-    padding-left:4em;
-    text-align: left;
-    float:left;
-}
-
-.post-title {
-    width:100%;
-    float:left;
-    text-align: left;
-    width:100%;
     margin-bottom: 1em;
+    text-align: center;
 }
 
 a {
     text-decoration: none;
 }
 
+.post-body, .post-title {
+
+}
+
+
 div.photo a{
-    float: left;
     background-color: lightgray;
     background-image: url('imgs/ryan.jpg');
     background-size: 7em;
     width:7em;
     height:7em;
     border-radius: 7em;
-    margin: 1em;
-    margin-right: 3em;
-}
-
-.title-bar {
-    margin:1em;
+    margin:0 auto;
+    display:block;
 }
 
 blockquote {
@@ -79,20 +58,22 @@ blockquote {
 blockquote p {
 	margin: 0; }
 
-h1, small {
-    line-height: 1em;
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-bottom: .75em;
 }
 
 h1{
     font-size: 2em;
-    margin: .2em;
     color: #000;
 }
 
 h2 a {
-    display:block;
-    float:left;
-    padding-left: 1.5em;
     font-size:2.5em;
     color:#000;
 }
@@ -100,7 +81,7 @@ h2 a:hover {
     color:#000;
 }
 h2 a:hover:after {
-    margin:.25em;
+
     color:#000;
 }
 
@@ -117,11 +98,8 @@ p {
 }
 
 hr {
-    margin-top: 2em;
-    margin-right:10em;
-    margin-bottom: 2em;
+    margin:3em auto;
     border: 0;
-    width:100%;
     border-bottom: 1px dashed #ccc;
     background-color: #004A66;
 }
@@ -131,28 +109,13 @@ span.tags a{
     font-size: .75em;
     background-color: #e7e7e7;
     border-radius: 10px;
-    line-height: 3em;
+    line-height: 4em;
     padding:.5em;
-    margin:.5em;
 }
 
 span.tags a:hover {
     background-color: #79CEED;
 }
-
-.width-100{
-    width:100%;
-    margin:0px;
-    padding:0px;
-    float:left
-}
-
-.width-50 {
-    width:50%;
-    margin:0px;
-    padding:0px;
-    float:left
-   }
 
 #post_title {
     padding:1em;
@@ -170,14 +133,6 @@ span.tags a:hover {
     padding:1em;
     width:100%;
     height: 20em;
-
-}
-
-.header-bar {
-    margin: 0;
-    padding: 0;
-    width:100%;
-    height:.4em;
 
 }
 
@@ -208,16 +163,8 @@ span.tags a:hover {
 
 .header-color-box {
     float:left;
-    width:20%;
     height:.4em;
-    margin:0;
-    padding:0;
 }
-
-* {
-margin: 0;
-}
-
 
 
 html, body {height: 100%;}
@@ -225,6 +172,7 @@ html, body {height: 100%;}
 .wrap {min-height: 100%;}
 
 .main {overflow:auto;
+    padding:2em;
 	padding-bottom: 150px;}  /* must be same height as the footer */
 
 .footer {position: relative;
