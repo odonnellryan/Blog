@@ -5,6 +5,7 @@ import forms
 import blog_mods
 import db_mods
 from flask_frozen import Freezer
+from login import _login
 
 
 f_app = Flask(__name__)
@@ -43,7 +44,7 @@ def login(article=None, username=None):
 
     form = forms.Login(request.form)
 
-    if config._login(form.username.data,form.password.data):
+    if _login(form.username.data,form.password.data):
         session['LOGGED_IN'] = True
         return redirect(url_for('blog.add'))
     else:
