@@ -1,6 +1,9 @@
 from app import app, freezer
 import sys
 
+import os
+sys.path.append(os.getcwd())
+
 app.testing = True
 #TODO: turn debugging off
 app.debug = True
