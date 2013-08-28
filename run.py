@@ -1,6 +1,5 @@
-from app import app, freezer
 import sys
-
+from app import app
 import os
 sys.path.append(os.getcwd())
 
@@ -9,7 +8,4 @@ app.testing = True
 app.debug = True
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1 and sys.argv[1] == "build":
-        freezer.freeze()
-    else:
-        app.run(port=8000)
+    app.run(port=8000)

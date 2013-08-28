@@ -1,10 +1,13 @@
-from flask import Blueprint, request, render_template, g, redirect, url_for, session, flash, jsonify
+from flask import Blueprint, request, render_template, g, redirect, url_for, session, flash, jsonify, Flask
 import decorators
 import config
 import forms
 import blog_mods
 import db_mods
-from subprocess import call
+from flask_frozen import Freezer
+
+
+f_app = Flask(__name__)
 
 mod = Blueprint('blog', __name__, url_prefix='/admin/')
 f_mod = Blueprint('f_blog', __name__, url_prefix='/')
@@ -78,11 +81,16 @@ def edit(post_id=None):
 @decorators.requires_login
 def commit(username=None,article=None):
 
+    f_app.register_blueprint(f_mod)
+
+    freezer = Freezer(f_app)
+
     form = forms.Commit(request.form)
 
     if request.method == 'POST' and form.validate() and form.commit.data == True:
-        call('python run.py build')
-        flash('Committed your changes to Flat Files')
+        freezer.freeze()
+        return redirect(url_for('blog.index'))
+
 
     return render_template('commit.html',  form=form)
 
@@ -107,3 +115,7 @@ def render_temp_title(username=None,article=None):
         return("")
 
 
+@f_mod.errorhandler(404)
+@mod.errorhandler(404)
+def not_found(error):
+    return render_template('404.html', title="404 Error"), 404
