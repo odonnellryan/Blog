@@ -11,9 +11,6 @@ app = Flask(__name__)
 f_app = Flask(__name__)
 app.config.from_object('config')
 
-
-
-
 from views import mod as blog
 from views import f_mod as f_blog
 

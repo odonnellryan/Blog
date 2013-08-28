@@ -7,7 +7,7 @@ class NeoDB(Model):
         database = config.DATABASE
 
 
-class RyanBlog(NeoDB):
+class blog(NeoDB):
     post_id = IntegerField(primary_key=True)
     title = CharField()
     body = TextField()

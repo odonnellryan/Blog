@@ -1,5 +1,5 @@
 import db_config
-blog = db_config.RyanBlog
+blog = db_config.blog
 
 
 def check_if_post_exists(get_post_id):
@@ -30,10 +30,10 @@ def check_user(get_title, get_user):
 
 
 def add_new_post(get_title, get_body):
-    blog = db_config.RyanBlog()
-    blog.title = get_title
-    blog.body = get_body
-    blog.save()
+    insert_blog = blog()
+    insert_blog.title = get_title
+    insert_blog.body = get_body
+    insert_blog.save()
     return
 
 
