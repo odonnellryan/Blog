@@ -22,6 +22,15 @@ def index(article=None, username=None):
     return render_template('view.html', posts=posts, render_html=blog_mods.get_html_content)
 
 
+@mod.route('preview/', methods=['GET', 'POST'])
+@f_mod.route('preview/', methods=['GET', 'POST'])
+def view(article=None, username=None):
+
+    posts = db_mods.get_latest_ten_posts()
+
+    return render_template('view.html', posts=posts, render_html=blog_mods.get_html_content)
+
+
 @mod.route('admin/', methods=['GET', 'POST'])
 @decorators.requires_login
 def admin(username=None,article=None):
@@ -77,6 +86,26 @@ def edit(post_id=None):
     return render_template('edit.html',  form=form, page_content=page_content, post_id=post_id)
 
 
+@mod.route('delete/<post_id>', methods=['GET', 'POST'])
+@mod.route('delete/', methods=['GET', 'POST'])
+@decorators.requires_login
+def delete(post_id = None):
+
+    form = forms.Delete(request.form)
+    _page_content = db_mods.get_post_content(post_id)
+
+    if not post_id:
+        _page_content = db_mods.get_all_titles_and_ids()
+
+    if request.method == 'POST' and form.delete.data:
+        _page_content = db_mods.get_post_content(post_id)
+        flash('Post successfully deleted: ' + _page_content['title'])
+        db_mods.delete_post(post_id)
+        return redirect(url_for('blog.index'))
+
+    return render_template('delete.html', page_content=_page_content, post_id=post_id, form=form)
+
+
 @mod.route('commit/', methods=['GET', 'POST'])
 @decorators.requires_login
 def commit(username=None,article=None):
@@ -89,8 +118,8 @@ def commit(username=None,article=None):
 
     if request.method == 'POST' and form.validate() and form.commit.data == True:
         freezer.freeze()
+        flash('Successfully Committed Your Files')
         return redirect(url_for('blog.index'))
-
 
     return render_template('commit.html',  form=form)
 

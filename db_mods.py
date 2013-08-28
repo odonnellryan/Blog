@@ -3,7 +3,7 @@ blog = db_config.blog
 
 
 def check_if_post_exists(get_post_id):
-    return blog.where(blog.title == get_post_id).exists()
+    return blog.select().where(blog.post_id == get_post_id).exists()
 
 
 def get_all_titles_and_ids():
@@ -44,3 +44,9 @@ def edit_post(get_title, get_body, get_post_id):
         return True
     return False
 
+
+def delete_post(get_post_id):
+    if check_if_post_exists(get_post_id):
+        post = blog.get(blog.post_id == get_post_id)
+        return post.delete_instance()
+    return False

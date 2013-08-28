@@ -12,3 +12,7 @@ class Login(Form):
 
 class Commit(Form):
     commit = BooleanField(U'Commit to Flat File')
+
+
+class Delete(Form):
+    delete = BooleanField(U'Check to Delete Post')
