@@ -1,0 +1,19 @@
+{% extends "index.html" %}
+        {% block body %}
+            <div class="pure-u-1">
+                <h1>Change your User-Defined Settings</h1>
+                <hr>
+                {% from "macro.html" import render_field %}
+                <form method=post action="{{ url_for('blog.settings') }}">
+                  <dl>
+                      {{ render_field(form.blog_title) }}
+                      {{ render_field(form.blog_subtitle) }}
+                      {{ render_field(form.full_name) }}
+                      {{ render_field(form.tags) }}
+                      {{ render_field(form.footer_text) }}
+
+                  </dl>
+                  <p><input type=submit value="Update User Data">
+                </form>
+            </div>
+        {%endblock%}

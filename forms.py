@@ -1,4 +1,4 @@
-from wtforms import Form, TextField, TextAreaField, validators, BooleanField
+from wtforms import Form, TextField, TextAreaField, validators, BooleanField, FileField
 
 class NewPost(Form):
     post_title = TextField(u'Post Title', [validators.Length(min=1)])
@@ -10,9 +10,26 @@ class Login(Form):
     password = TextField(u'Password', [validators.Length(min=1)])
 
 
+class ChangeLogin(Form):
+    username = TextField(u'Current Username', [validators.Length(min=1)])
+    password = TextField(u'Current Password', [validators.Length(min=1)])
+    new_username = TextField(u'New Username (if desired)')
+    new_password_1 = TextField(u'New Password (if desired)')
+    new_password_2 = TextField(u'New Password (again)')
+
+
 class Commit(Form):
     commit = BooleanField(U'Commit to Flat File')
 
 
 class Delete(Form):
     delete = BooleanField(U'Check to Delete Post')
+
+
+class BlogSettings(Form):
+    blog_title = TextField(u'Blog Title')
+    blog_subtitle = TextField(u'Blog SubTitle')
+    full_name = TextField(u'Display Name')
+    footer_text = TextAreaField(u'Footer Text (HTML and Markdown allowed)')
+    tags = TextField(u'Comma-Separated Interest Tags (max-length 2000 characters)', [validators.Length(max=2000)])
+    logo_image = FileField(u'Upload Any Size JPG Logo. Overwrites existing image')

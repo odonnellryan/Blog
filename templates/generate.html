@@ -1,0 +1,35 @@
+{% extends "index.html" %}
+        {% block body %}
+                <div class="post-content">
+                    <div class="pure-u-1">
+                        {% if previous_page %}
+                            <span class="position-left"><a href="{{ url_for('f_blog.generate_blog_pages', page=previous_page) }}">Previous Page</a></span>
+                        {% endif %}
+                        {% if next_page %}
+                            <span class="position-right"><a href="{{ url_for('f_blog.generate_blog_pages', page=next_page) }}">Next Page</a></span>
+                        {% endif %}
+                    </div>
+                    {% for post in posts %}
+
+                        <div class="pure-u-1">
+                            <span class=post-title>
+                                <h2><a id="{{ post.title }}" href="#{{ post.title }}">{{ post.title }}</a></h2>
+                            </span>
+                        </div>
+                        <div class="pure-u-1 post-body">
+                            <span class=post-title>
+                            {{ render_html(post.body) | safe }}
+                            </span>
+                        </div>
+                        <hr>
+                    {% endfor %}
+                    <div class="pure-u-1">
+                        {% if previous_page %}
+                            <span class="position-left"><a href="{{ url_for('f_blog.generate_blog_pages', page=previous_page) }}">Previous Page</a></span>
+                        {% endif %}
+                        {% if next_page %}
+                            <span class="position-right"><a href="{{ url_for('f_blog.generate_blog_pages', page=next_page) }}">Next Page</a></span>
+                        {% endif %}
+                    </div>
+                </div>
+        {%endblock%}

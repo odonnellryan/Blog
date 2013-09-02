@@ -1,6 +1,6 @@
 {% extends "index.html" %}
 {% block body %}
- <div class="width-50">
+ <div class="pure-u-1-2">
   <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
   {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
     {% from "macro.html" import render_field %}
@@ -12,7 +12,7 @@
       <p><input type=submit value="Create Post">
     </form>
  </div>
- <div class="width-50">
+ <div class="pure-u-1-2">
     <div id=render_title> </div>
     <div id=render_body> </div>
  </div>
