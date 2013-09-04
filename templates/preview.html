@@ -10,16 +10,24 @@
                         {% endif %}
                     </div>
                     {% for post in posts %}
-
                         <div class="pure-u-1">
                             <span class=post-title>
                                 <h2><a id="{{ post.title }}" href="#{{ post.title }}">{{ post.title }}</a></h2>
                             </span>
                         </div>
                         <div class="pure-u-1 post-body">
-                            <span class=post-title>
+                            <span class=post-body>
                             {{ render_html(post.body) | safe }}
                             </span>
+                        </div>
+                        <div class="pure-u-1 post_tags_display">
+                            {% if post.tags %}
+                                {% for tag in post.tags %}
+                                    <span class="display_tag">
+                                        {{ tag }}
+                                    </span>
+                                {% endfor %}
+                            {% endif %}
                         </div>
                         <hr>
                     {% endfor %}

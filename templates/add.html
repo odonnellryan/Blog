@@ -4,12 +4,18 @@
   <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
   {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
     {% from "macro.html" import render_field %}
+     {% from "macro.html" import render_checkboxes %}
     <form method=post action="{{ url_for('blog.add') }}">
       <dl>
         {{ render_field(form.post_title) }}
         {{ render_field(form.post_body) }}
+        <div class="post_tag_holder">
+            {% for tag in tag_values %}
+                {{ render_checkboxes(tag_values[tag], class='input') }}
+            {% endfor %}
+        </div>
       </dl>
-      <p><input type=submit value="Create Post">
+      <input type=submit class="submit" value="Create Post">
     </form>
  </div>
  <div class="pure-u-1-2">

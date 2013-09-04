@@ -7,13 +7,18 @@
   <div class="pure-u-1-2">
     <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
     {% from "macro.html" import render_field %}
-
+    {% from "macro.html" import render_checkboxes %}
     <form method=post action="{{ url_for('blog.edit', post_id=post_id) }}">
       <dl>
         {{ render_field(form.post_title) }}
         {{ render_field(form.post_body) }}
       </dl>
-      <p><input type=submit value="Save Edit">
+      <div class="post_tag_holder">
+        {% for tag in tag_values %}
+            {{ render_checkboxes(tag_values[tag], class='input') }}
+        {% endfor %}
+      </div>
+      <input type=submit class="submit" value="Save Edit">
     </form>
 
     </div>

@@ -15,7 +15,7 @@ body {
     -webkit-text-stroke: .25px;
 }
 
-/* below are text-styles */
+/* below are text-styles  */
 
 small {
     color:gray;
@@ -109,11 +109,32 @@ hr {
     background-color: #004A66;
 }
 
+/* below are element-styles */
+
+input[type="checkbox"] {
+    display:none;
+}
+input[type="checkbox"] + label {
+    display:inline-block;
+    padding:.5em;
+    border-radius: 10px;
+    margin:.25em;
+    background-color: #e7e7e7;
+    cursor:pointer;
+}
+input[type="checkbox"]:checked + label {
+    background-color:#79CEED;
+}
+
 /*styles on divs and other stuff similar to that - basic page styling*/
+
+.post_tag_holder {
+    text-align: center;
+}
 
 div.photo a{
     background-color: lightgray;
-    background-image: url('imgs/logo.jpg');
+    background-image: url('/static/imgs/logo.jpg');
     background-size: 7em;
     width:7em;
     height:7em;
@@ -123,12 +144,23 @@ div.photo a{
     display:block;
 }
 
-span.tags a{
+span.display_tag {
+    display: inline-block;
     color:#000;
     font-size: .75em;
     background-color: #e7e7e7;
     border-radius: 10px;
-    line-height: 4em;
+    margin: .5em;
+    padding:.5em;
+}
+
+span.tags a{
+    display: inline-block;
+    color:#000;
+    font-size: .75em;
+    background-color: #e7e7e7;
+    border-radius: 10px;
+    margin: .5em;
     padding:.5em;
 }
 
@@ -163,6 +195,7 @@ span.tags a:hover {
 }
 
 .submit {
+    display:block;
     background-color: #FF8400;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
@@ -174,12 +207,12 @@ span.tags a:hover {
     padding:.5em;
     cursor: hand;
     border:none;
-    margin:1em;
+    margin:1em auto;
 }
 
 .submit:hover {
     border: none;
-    background:#d0d2d3;
+    background:#f42a00;
     box-shadow: 0px 0px 1px #777;
 }
 

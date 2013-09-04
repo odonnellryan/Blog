@@ -12,6 +12,7 @@ class Posts(Blog):
     title = CharField()
     body = TextField()
     visible = IntegerField()
+    tags = CharField()
 
 
 class UserData(Blog):

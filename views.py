@@ -5,14 +5,12 @@ import forms
 import blog_mods
 import db_mods
 import config
-from flask_frozen import Freezer
-import os
+import create_flat
+import helper_funcs
+from wtforms import BooleanField
 from login import _login, update_password, update_username
 
 mod = Blueprint('blog', __name__, url_prefix='/admin/')
-
-f_mod = Blueprint('f_blog', __name__, url_prefix='/')
-
 
 
 @mod.before_request
@@ -27,12 +25,6 @@ def teardown_request(exception):
     db = getattr(g, 'db', None)
     if db is not None:
         db.close()
-
-
-@f_mod.errorhandler(404)
-@mod.errorhandler(404)
-def not_found(error):
-    return render_template('404.html', title="404 Error"), 404
 
 
 @mod.route('/', methods=['GET', 'POST'])
@@ -138,7 +130,6 @@ def preview(page=None):
 
     pagination = blog_mods.pagination(page, page_count)
 
-
     if not pagination['next_page'] == 0:
         next_page = str(pagination['next_page'])
     else:
@@ -153,33 +144,18 @@ def preview(page=None):
     return render_template('preview.html', page=page, posts=posts, render_html=blog_mods.get_html_content, footer=footer,
                            next_page=next_page, previous_page=previous_page, user_data=g.user_data)
 
+@mod.route('tagged/<tag>', methods=['GET', 'POST'])
+@mod.route('tagged/', methods=['GET', 'POST'])
+@decorators.requires_login
+def tagged(tag=None):
 
-@f_mod.route('/')
-@f_mod.route('<page>/')
-def generate_blog_pages(page=1):
+    tags = db_mods.tag_array()
+    posts = None
 
-    user_data = db_mods.get_user_data()
-    user_data.tags = user_data.tags.split(',')
+    if tag:
+        posts = db_mods.search_by_tag(tag)
 
-    posts = db_mods.paginate_visible_posts(int(page))
-
-    page_count = blog_mods.get_number_of_visible_pages()
-
-    pagination = blog_mods.pagination(page, page_count)
-
-    if not pagination['next_page'] == 0:
-        next_page = pagination['next_page']
-    else:
-        next_page = 0
-
-
-    if not pagination['previous_page'] == 0:
-        previous_page = pagination['previous_page']
-    else:
-        previous_page = 0
-
-    return render_template('generate.html', page=page, posts=posts, render_html=blog_mods.get_html_content,
-                           next_page=next_page, previous_page=previous_page, user_data=user_data)
+    return render_template('tagged.html', tags=tags, render_html=blog_mods.get_html_content, user_data=g.user_data, posts=posts)
 
 
 @mod.route('login/', methods=['GET', 'POST'])
@@ -201,13 +177,23 @@ def login():
 @decorators.requires_login
 def add():
 
-    form = forms.NewPost(request.form)
+    class NewPostTags(forms.NewPost):
+        pass
+
+    post_tags = db_mods.tag_array()
+
+    for name in post_tags:
+        setattr(NewPostTags, name, BooleanField(name))
+
+    form = NewPostTags(request.form)
+
+    tag_values = helper_funcs.return_method_dict(form, post_tags)
 
     if request.method == 'POST' and form.validate():
-        db_mods.add_new_post(form.post_title.data, form.post_body.data)
+        db_mods.add_new_post(form.post_title.data, form.post_body.data, tag_values)
         return redirect(url_for('blog.preview'))
 
-    return render_template('add.html',  form=form, user_data=g.user_data)
+    return render_template('add.html',  form=form, user_data=g.user_data, tag_values=tag_values)
 
 
 @mod.route('edit/<post_id>/', methods=['GET', 'POST'])
@@ -215,9 +201,17 @@ def add():
 @decorators.requires_login
 def edit(post_id=None):
 
-    page_content = []
+    class NewPostTags(forms.NewPost):
+        pass
 
-    form = forms.NewPost(request.form)
+    post_tags = db_mods.tag_array()
+
+    for name in post_tags:
+        setattr(NewPostTags, name, BooleanField(name))
+
+    form = NewPostTags(request.form)
+
+    page_content = []
 
     if not post_id:
         page_content = db_mods.get_all_titles_and_ids()
@@ -232,7 +226,8 @@ def edit(post_id=None):
         db_mods.edit_post(form.post_title.data, form.post_body.data, post_id)
         return redirect(url_for('blog.edit'))
 
-    return render_template('edit.html',  form=form, page_content=page_content, post_id=post_id, user_data=g.user_data)
+    return render_template('edit.html',  form=form, page_content=page_content, post_id=post_id, user_data=g.user_data,
+                           tag_values = helper_funcs.return_method_dict(form, post_tags))
 
 
 @mod.route('delete/<post_id>', methods=['GET', 'POST'])
@@ -259,17 +254,10 @@ def delete(post_id=None):
 @decorators.requires_login
 def commit():
 
-    f_app = Flask(__name__)
-    f_app.register_blueprint(f_mod)
-    f_app.testing = True
-    f_app.debug = True
-
     form = forms.Commit(request.form)
 
-    freezer = Freezer(f_app)
-
     if request.method == 'POST' and form.validate() and form.commit.data == True:
-        print freezer.freeze()
+        create_flat.freezer.freeze()
         flash('Successfully Committed Your Files')
         return redirect(url_for('blog.index'))
 

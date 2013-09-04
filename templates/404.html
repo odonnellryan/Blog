@@ -1,63 +1,7 @@
-<html>
-
-    <head>
-        <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
-        <link href='http://fonts.googleapis.com/css?family=Lato:400,900' rel='stylesheet' type='text/css'>
-        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-        <title>
-            Ryan O'Donnell : {{ title }}
-        </title>
-
-    </head>
-
-    <body>
-        <div class="wrap">
-            <div class="header-bar">
-                <div class="header-color-box red"></div>
-                <div class="header-color-box blue"></div>
-                <div class="header-color-box light-blue"></div>
-                <div class="header-color-box dark-blue"></div>
-                <div class="header-color-box orange"></div>
+{% extends "index.html" %}
+        {% block body %}
+            <div class="pure-u-1">
+                Error: 404. Seems as if you're trying to access a page that does not exist.
+                <br>
             </div>
-            <div class="main">
-                <div class="header">
-                    <div class="photo">
-                    </div>
-                    <div class="title-bar">
-                        <h1>
-                            Ryan O'Donnell
-                        </h1>
-                        <small>
-                            The blog and musings of Ryan O'Donnell
-                        </small>
-                    </div>
-                    <span class="tags"><a href="#">Hiking</a></span>
-                    <span class="tags"><a href="#">Coding</a></span>
-                    <span class="tags"><a href="#">Cooking</a></span>
-                    <span class="tags"><a href="#">Working</a></span>
-                    <span class="tags"><a href="#">Living</a></span>
-                </div>
-                <div class="post-wrapper">
-                    <h2><a id="post_title" href="#post_title">Error! Error!</a></h2>
-                    <div class="post-body">
-                        <p>Sorry about that! Seems like this page doesn't exist.<a href="/">Home</a>
-                        </p>
-                    </div>
-                    <hr>
-                </div>
-            </div>
-            <div class="push">
-            </div>
-        </div>
-        <div class="footer">
-            <div class="header-bar">
-                <div class="header-color-box red"></div>
-                <div class="header-color-box blue"></div>
-                <div class="header-color-box light-blue"></div>
-                <div class="header-color-box dark-blue"></div>
-                <div class="header-color-box orange"></div>
-            </div>
-        </div>
-    </body>
-    <script src="static/js/js.js"></script>
-</html>
+        {%endblock%}
