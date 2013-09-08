@@ -23,3 +23,5 @@ class UserData(Blog):
     blog_title = CharField()
     password = BlobField()
     username = CharField()
+    forgot_password = BlobField()
+    email = BlobField()

@@ -24,6 +24,7 @@ def post_tag_identifier(get_tags):
 
 # get post information
 
+
 def check_if_post_exists(get_post_id):
     return blog.select().where(blog.post_id == get_post_id).exists()
 
@@ -110,6 +111,13 @@ def delete_post(get_post_id):
 
 #User Data related database queries
 
+
+def email_username_check(get_email, get_username):
+    try:
+        if user_d.get(user_d.email == get_email, user_d.username == get_username):
+            return True
+    except Exception, e:
+        return False
 
 def update_all_data(get_title, get_subtitle, get_full_name, get_tags, get_footer_text):
     tags = get_tags.replace(" ", "")

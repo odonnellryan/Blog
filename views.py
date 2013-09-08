@@ -173,6 +173,20 @@ def login():
     return render_template('login.html', form=form, user_data=g.user_data)
 
 
+@mod.route('forgot_password/', methods=['GET', 'POST'])
+def forgot_password():
+
+    form = forms.ForgotPassword(request.form)
+
+    if request.method == 'POST' and db_mods.email_username_check(form.email.data, form.username.data):
+            session['LOGGED_IN'] = True
+            return redirect(url_for('blog.index'))
+    else:
+        flash('Sorry, you put in the wrong information')
+
+    return render_template('forgot_password.html', form=form, user_data=g.user_data)
+
+
 @mod.route('add/', methods=['GET', 'POST'])
 @decorators.requires_login
 def add():

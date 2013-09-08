@@ -10,6 +10,11 @@ class Login(Form):
     password = TextField(u'Password', [validators.Length(min=1)])
 
 
+class ForgotPassword(Form):
+    username = TextField(u'Username', [validators.Length(min=1)])
+    email = TextField(u'Email', [validators.Length(min=1)])
+
+
 class ChangeLogin(Form):
     username = TextField(u'Current Username', [validators.Length(min=1)])
     password = TextField(u'Current Password', [validators.Length(min=1)])
