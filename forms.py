@@ -1,4 +1,4 @@
-from wtforms import Form, TextField, TextAreaField, validators, BooleanField, FileField
+from wtforms import Form, TextField, TextAreaField, validators, BooleanField, FileField, PasswordField
 
 class NewPost(Form):
     post_title = TextField(u'Post Title', [validators.Length(min=1)])
@@ -7,7 +7,7 @@ class NewPost(Form):
 
 class Login(Form):
     username = TextField(u'Username', [validators.Length(min=1)])
-    password = TextField(u'Password', [validators.Length(min=1)])
+    password = PasswordField(u'Password', [validators.Length(min=1)])
 
 
 class ForgotPassword(Form):
@@ -17,10 +17,10 @@ class ForgotPassword(Form):
 
 class ChangeLogin(Form):
     username = TextField(u'Current Username', [validators.Length(min=1)])
-    password = TextField(u'Current Password', [validators.Length(min=1)])
+    password = PasswordField(u'Current Password', [validators.Length(min=1)])
     new_username = TextField(u'New Username (if desired)')
-    new_password_1 = TextField(u'New Password (if desired)')
-    new_password_2 = TextField(u'New Password (again)')
+    new_password_1 = PasswordField(u'New Password (if desired)')
+    new_password_2 = PasswordField(u'New Password (again)')
 
 
 class Commit(Form):

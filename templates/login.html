@@ -1,11 +1,14 @@
 {% extends "index.html" %}
     {% block body %}
         {% from "macro.html" import render_field %}
-        <form method=post action="{{ url_for('blog.login') }}">
-          <dl>
-            {{ render_field(form.username) }}
-            {{ render_field(form.password) }}
-          </dl>
-          <p><input type=submit value="Create Post">
-        </form>
+        <div class="pure-u-1">
+            <form method=post action="{{ url_for('blog.login') }}">
+              <dl>
+                {{ render_field(form.username) }}
+                {{ render_field(form.password) }}
+              </dl>
+              <p><input type=submit value="Login">
+            </form>
+            <a href="{{url_for('blog.forgot_password')}}">Forgot Password?</a>
+        </div>
     {%endblock%}

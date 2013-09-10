@@ -31,6 +31,10 @@ pre {
     padding-bottom:.5em;
     padding-top: .5em;
     -webkit-text-stroke: 0px;
+    font-family: 'Source Code Pro', sans-serif;
+}
+
+code {
 }
 
 p {
@@ -81,8 +85,7 @@ h3 { font-size: 1.17em;}
 h5 { font-size: .83em;}
 h6 { font-size: .75em;}
 
-h2 a {
-    font-size:2em;
+h1 a {
     color:#000;
 }
 
@@ -127,6 +130,19 @@ input[type="checkbox"]:checked + label {
 }
 
 /*styles on divs and other stuff similar to that - basic page styling*/
+
+.logout {
+    display:inline-block;
+    color:gray;
+    padding:.25em;
+    border: 1px solid;
+    border-radius: 10px;
+    margin:.5em;
+}
+
+.login-bar {
+    height:2em;
+}
 
 .post_tag_holder {
     text-align: center;
@@ -178,8 +194,9 @@ span.tags a:hover {
 #render_title {
     padding:16px;
     font-weight:bolder;
-    font-size: 2.5em;
-    color:#000;
+    font-size: 2em;
+    color: #000;
+    padding-top:.5em;
 }
 
 #post_body {
@@ -253,13 +270,14 @@ span.tags a:hover {
 .header {
     background-color: #fff;
     font-size: 1.5em;
-    padding-top: 2em;
     max-width:1000px;
     text-align: center;
     margin:0 auto;
 }
 
 .main {
+    max-width: 1200px;
+    margin: 0 auto;
     padding-left: 2em;
     padding-top:2em;
     padding-right:2em;
@@ -268,7 +286,6 @@ span.tags a:hover {
 .post-content {
     margin: 0 auto;
     padding-top:2em;
-    max-width:1000px;
 }
 
 .position-right {

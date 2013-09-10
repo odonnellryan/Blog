@@ -1,5 +1,6 @@
-import db_config
 from collections import OrderedDict
+import db_config
+
 blog = db_config.Posts
 user_d = db_config.UserData
 
@@ -21,6 +22,17 @@ def post_tag_identifier(get_tags):
     tags = ",".join(post_tags)
 
     return tags
+
+
+def tag_parser(get_tags):
+    """
+    Gets tags in a list and parses them, removing spaces before and after words
+    """
+    tags = get_tags.split(",")
+    _tags = [x.strip(" ") for x in tags]
+    return ",".join(_tags)
+
+
 
 # get post information
 
@@ -75,12 +87,15 @@ def add_new_post(get_title, get_body, get_tags):
 
     tags = post_tag_identifier(get_tags)
 
-    insert_blog = blog()
-    insert_blog.title = get_title
-    insert_blog.body = get_body
-    insert_blog.tags = tags
-    insert_blog.save()
-
+    try:
+        insert_blog = blog()
+        insert_blog.title = get_title
+        insert_blog.body = get_body
+        insert_blog.tags = tags
+        if insert_blog.save():
+            return True
+    except:
+        return False
     return
 
 
@@ -112,15 +127,8 @@ def delete_post(get_post_id):
 #User Data related database queries
 
 
-def email_username_check(get_email, get_username):
-    try:
-        if user_d.get(user_d.email == get_email, user_d.username == get_username):
-            return True
-    except Exception, e:
-        return False
-
 def update_all_data(get_title, get_subtitle, get_full_name, get_tags, get_footer_text):
-    tags = get_tags.replace(" ", "")
+    tags = tag_parser(get_tags)
     query = user_d.update(blog_title=get_title, blog_subtitle=get_subtitle, full_name=get_full_name,
                           tags=tags, footer_text=get_footer_text).where(user_d.id == 0)
     query.execute()
@@ -142,7 +150,7 @@ def update_name(get_full_name):
 
 
 def update_tags(get_tag_list):
-    _tags = get_tag_list.replace(" ", "")
+    _tags = tag_parser(get_tags)
     tags = user_d.update(tags=_tags).where(user_d.id == 0)
     tags.execute()
 
@@ -153,6 +161,7 @@ def update_footer_text(get_footer_text):
 
 
 #Get user-configured data functions
+
 
 def get_user_data():
     query = user_d.get(user_d.id == 0)
@@ -168,11 +177,6 @@ def get_tags():
 def tag_array():
     """returns tags in an array """
     return get_tags().split(',')
-
-
-def get_username():
-    query = user_d.get(user_d.id == 0)
-    return query.username
 
 
 def get_password(get_username):

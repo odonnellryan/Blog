@@ -7,10 +7,12 @@ import db_mods
 import config
 import create_flat
 import helper_funcs
+from collections import OrderedDict
 from wtforms import BooleanField
 from login import _login, update_password, update_username
 
-mod = Blueprint('blog', __name__, url_prefix='/admin/')
+
+mod = Blueprint('blog', __name__, url_prefix='/')
 
 
 @mod.before_request
@@ -18,6 +20,10 @@ def before_request():
     g.db = config.DATABASE.connect()
     g.user_data = db_mods.get_user_data()
     g.user_data.tags = g.user_data.tags.split(',')
+    try:
+        g.logged_in = session['LOGGED_IN']
+    except KeyError:
+        g.logged_in = False
 
 
 @mod.teardown_request
@@ -32,15 +38,15 @@ def teardown_request(exception):
 def index():
     """admin page"""
 
-    post_mods = {'blog.add' : 'Add a Post', 'blog.delete' : 'Delete a Post', 'blog.edit' : 'Edit Posts',
-                   'blog.preview' : 'Preview Main Page', 'blog.commit' : 'Commit your Blog to Flatfile',}
+    post_mods = OrderedDict([('blog.add', 'Add a Post'), ('blog.delete', 'Delete a Post'), ('blog.edit', 'Edit Posts'),
+                   ('blog.preview', 'Preview Main Page'), ('blog.commit', 'Commit your Blog to Flatfile')])
 
-    blog_settings = {'blog.settings' : 'Change Blog Settings', 'blog.change_login': 'Change Login Information'}
+    blog_settings = OrderedDict([('blog.settings', 'Change Blog Settings'), ('blog.change_login', 'Change Login Information')])
 
     #blog_statistics = {'blog.statistics' : 'View Blog Statistics'}
 
     return render_template('admin.html', render_html=blog_mods.get_html_content, post_mods=post_mods,
-                           blog_settings=blog_settings, user_data=g.user_data)
+                           blog_settings=blog_settings, user_data=g.user_data, logged_in=g.logged_in)
 
 
 @mod.route('settings/', methods=['GET', 'POST'])
@@ -74,13 +80,13 @@ def settings():
         except Exception, e:
             flash(e)
 
-    return render_template('settings.html', form=form, user_data=g.user_data, page_title="Blog Settings")
+    return render_template('settings.html', form=form, user_data=g.user_data, page_title="Blog Settings",
+                           logged_in=g.logged_in)
 
 
 @mod.route('settings/change_login/', methods=['GET', 'POST'])
-@mod.route('settings/change_login/<validation>', methods=['GET', 'POST'])
 @decorators.requires_login
-def change_login(validation=None):
+def change_login():
 
     form = forms.ChangeLogin(request.form)
 
@@ -101,10 +107,11 @@ def change_login(validation=None):
             flash('There was an error updating your blog information.' + str(e))
             return render_template('change_login.html')
     elif request.method == 'POST' and not _login(form.username.data, form.password.data):
-        flash('Your Current Username or Password Was Incorrect')
+        flash('Your Current Username or Password was incorrect')
 
 
-    return render_template('change_login.html', form=form, user_data=g.user_data)
+    return render_template('change_login.html', form=form, user_data=g.user_data,
+                           logged_in=g.logged_in)
 
 
 @mod.route('preview/', methods=['GET', 'POST'])
@@ -142,7 +149,8 @@ def preview(page=None):
 
 
     return render_template('preview.html', page=page, posts=posts, render_html=blog_mods.get_html_content, footer=footer,
-                           next_page=next_page, previous_page=previous_page, user_data=g.user_data)
+                           next_page=next_page, previous_page=previous_page, user_data=g.user_data,
+                           logged_in=g.logged_in)
 
 @mod.route('tagged/<tag>', methods=['GET', 'POST'])
 @mod.route('tagged/', methods=['GET', 'POST'])
@@ -155,11 +163,15 @@ def tagged(tag=None):
     if tag:
         posts = db_mods.search_by_tag(tag)
 
-    return render_template('tagged.html', tags=tags, render_html=blog_mods.get_html_content, user_data=g.user_data, posts=posts)
+    return render_template('tagged.html', tags=tags, render_html=blog_mods.get_html_content, user_data=g.user_data,
+                           posts=posts, logged_in=g.logged_in)
 
 
 @mod.route('login/', methods=['GET', 'POST'])
 def login():
+
+    if g.logged_in:
+        return redirect(url_for('blog.index'))
 
     form = forms.Login(request.form)
 
@@ -170,21 +182,18 @@ def login():
         else:
             flash('Sorry, you put in the wrong information')
 
-    return render_template('login.html', form=form, user_data=g.user_data)
+    return render_template('login.html', form=form, user_data=g.user_data, logged_in=g.logged_in)
 
 
-@mod.route('forgot_password/', methods=['GET', 'POST'])
+@mod.route('logout/', methods=['GET', 'POST'])
+def logout():
+    session.pop('LOGGED_IN')
+    return redirect(url_for('blog.index'))
+
+
+@mod.route('forgot_password/')
 def forgot_password():
-
-    form = forms.ForgotPassword(request.form)
-
-    if request.method == 'POST' and db_mods.email_username_check(form.email.data, form.username.data):
-            session['LOGGED_IN'] = True
-            return redirect(url_for('blog.index'))
-    else:
-        flash('Sorry, you put in the wrong information')
-
-    return render_template('forgot_password.html', form=form, user_data=g.user_data)
+    return render_template('forgot_password.html', user_data=g.user_data, logged_in=g.logged_in)
 
 
 @mod.route('add/', methods=['GET', 'POST'])
@@ -207,7 +216,7 @@ def add():
         db_mods.add_new_post(form.post_title.data, form.post_body.data, tag_values)
         return redirect(url_for('blog.preview'))
 
-    return render_template('add.html',  form=form, user_data=g.user_data, tag_values=tag_values)
+    return render_template('add.html',  form=form, user_data=g.user_data, tag_values=tag_values, logged_in=g.logged_in)
 
 
 @mod.route('edit/<post_id>/', methods=['GET', 'POST'])
@@ -241,7 +250,7 @@ def edit(post_id=None):
         return redirect(url_for('blog.edit'))
 
     return render_template('edit.html',  form=form, page_content=page_content, post_id=post_id, user_data=g.user_data,
-                           tag_values = helper_funcs.return_method_dict(form, post_tags))
+                           tag_values = helper_funcs.return_method_dict(form, post_tags), logged_in=g.logged_in)
 
 
 @mod.route('delete/<post_id>', methods=['GET', 'POST'])
@@ -261,7 +270,8 @@ def delete(post_id=None):
         db_mods.delete_post(post_id)
         return redirect(url_for('blog.index'))
 
-    return render_template('delete.html', page_content=_page_content, post_id=post_id, form=form, user_data=g.user_data)
+    return render_template('delete.html', page_content=_page_content, post_id=post_id, form=form, user_data=g.user_data,
+                           logged_in=g.logged_in)
 
 
 @mod.route('commit/', methods=['GET', 'POST'])
@@ -275,7 +285,7 @@ def commit():
         flash('Successfully Committed Your Files')
         return redirect(url_for('blog.index'))
 
-    return render_template('commit.html',  form=form, user_data=g.user_data)
+    return render_template('commit.html',  form=form, user_data=g.user_data, logged_in=g.logged_in)
 
 
 @mod.route('_render_temp_body/', methods=['GET', 'POST'])

@@ -4,6 +4,7 @@
         <link rel=stylesheet type=text/css href="{{ url_for('static', filename='pure-grid.css') }}">
         <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
         <link href='http://fonts.googleapis.com/css?family=Lato:400,900' rel='stylesheet' type='text/css'>
+        <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
         <script type=text/javascript>$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
         <title>
@@ -18,6 +19,18 @@
                 <div class="pure-u-1-5 header-color-box light-blue"></div>
                 <div class="pure-u-1-5 header-color-box dark-blue"></div>
                 <div class="pure-u-1-5 header-color-box orange"></div>
+            </div>
+            <div class="pure-g-r ">
+                <div class="pure-u-1-4"></div>
+                <div class="pure-u-1-4"></div>
+                <div class="pure-u-1-4"></div>
+                <div class="pure-u-1-4 login-bar">
+                    {% if logged_in %}
+                        <a class="logout" href="{{url_for('blog.logout')}}">Logout</a>
+                        <a class="logout" href="{{url_for('blog.index')}}">Admin</a>
+                        <a class="logout" href="{{url_for('blog.preview')}}">Preview</a>
+                    {% endif %}
+                </div>
             </div>
             <div class="pure-g-r">
                 <div class="pure-u-1 header_message">
@@ -39,7 +52,7 @@
                         </small>
                         <div class="pure-u-1"></div>
                         {% for key in user_data.tags %}
-                          <span class="tags"><a href="#">{{ key }}</a></span>
+                          <span class="tags"><a href="{{url_for('blog.tagged', tag=key)}}">{{ key }}</a></span>
                         {%endfor%}
                     </div>
                 </div>
