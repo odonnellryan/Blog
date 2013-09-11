@@ -5,6 +5,10 @@ class NewPost(Form):
     post_body = TextAreaField(u'Post Body', [validators.Length(min=1)])
 
 
+class UploadImages(Form):
+    post_image = FileField(u'Upload Image')
+
+
 class Login(Form):
     username = TextField(u'Username', [validators.Length(min=1)])
     password = PasswordField(u'Password', [validators.Length(min=1)])

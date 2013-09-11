@@ -1,25 +1,19 @@
 {% extends "index.html" %}
 {% block body %}
- <div class="pure-u-1-2">
-  <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
-  {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
-    {% from "macro.html" import render_field %}
-     {% from "macro.html" import render_checkboxes %}
-    <form method=post action="{{ url_for('blog.add') }}">
-      <dl>
-        {{ render_field(form.post_title) }}
-        {{ render_field(form.post_body) }}
-        <div class="post_tag_holder">
-            {% for tag in tag_values %}
-                {{ render_checkboxes(tag_values[tag], class='input') }}
-            {% endfor %}
-        </div>
-      </dl>
-      <input type=submit class="submit" value="Create Post">
-    </form>
- </div>
- <div class="pure-u-1-2">
-    <div id=render_title> </div>
-    <div id=render_body> </div>
- </div>
+    <div class="pure-u-1-2 center">
+        <a href="{{ url_for('blog.add_images')}}">
+            <img src="/static/imgs/camera.png" alt="Attach Images" />
+            <p>
+                Blog post with images.
+            </p>
+        </a>
+    </div>
+    <div class="pure-u-1-2 center">
+        <a href="{{ url_for('blog.add_post')}}">
+            <img src="/static/imgs/write.png" alt="Just Write" />
+            <p>
+                Just text Blog post.
+            </p>
+        </a>
+    </div>
 {% endblock %}

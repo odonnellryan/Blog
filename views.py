@@ -1,5 +1,5 @@
 from __future__ import division
-from flask import Blueprint, request, render_template, g, redirect, url_for, session, flash, jsonify, Flask
+from flask import Blueprint, request, render_template, g, redirect, url_for, session, flash, jsonify
 import decorators
 import forms
 import blog_mods
@@ -7,6 +7,8 @@ import db_mods
 import config
 import create_flat
 import helper_funcs
+import os
+from werkzeug.utils import secure_filename
 from collections import OrderedDict
 from wtforms import BooleanField
 from login import _login, update_password, update_username
@@ -152,6 +154,7 @@ def preview(page=None):
                            next_page=next_page, previous_page=previous_page, user_data=g.user_data,
                            logged_in=g.logged_in)
 
+
 @mod.route('tagged/<tag>', methods=['GET', 'POST'])
 @mod.route('tagged/', methods=['GET', 'POST'])
 @decorators.requires_login
@@ -196,9 +199,59 @@ def forgot_password():
     return render_template('forgot_password.html', user_data=g.user_data, logged_in=g.logged_in)
 
 
-@mod.route('add/', methods=['GET', 'POST'])
-@decorators.requires_login
-def add():
+@mod.route('add/images/', methods=['GET', 'POST'])
+def add_images():
+
+    """
+    add images page
+    """
+
+    image_form = forms.UploadImages(request.form)
+
+    return render_template('add_images.html', user_data=g.user_data, logged_in=g.logged_in,
+                           image_form=image_form)
+
+
+@mod.route('add/post/images/', methods=['GET', 'POST'])
+def add_post_images():
+
+    class NewPostTags(forms.NewPost):
+        pass
+
+    post_tags = db_mods.tag_array()
+
+    for name in post_tags:
+        setattr(NewPostTags, name, BooleanField(name))
+
+    form = NewPostTags(request.form)
+
+    tag_values = helper_funcs.return_method_dict(form, post_tags)
+
+    image_list=[]
+
+    if request.method == 'POST':
+        images = request.files
+        for image in images:
+            file_ = images[image]
+            if file_ and helper_funcs.allowed_file(file_.filename):
+                filename = secure_filename(file_.filename)
+                file_path = os.path.join(config.UPLOAD_FOLDER, filename)
+                while True:
+                    try:
+                        with open(file_path):
+                            new_path = file_path.split(".")
+                            file_path = new_path[0] + "1." + new_path[1]
+                    except IOError:
+                        image_list.append(file_path)
+                        file_.save(file_path)
+                        break
+
+    return render_template('add_post.html',  form=form, user_data=g.user_data, tag_values=tag_values,
+                           logged_in=g.logged_in, images=image_list)
+
+
+@mod.route('add/post/', methods=['GET', 'POST'])
+def add_post():
 
     class NewPostTags(forms.NewPost):
         pass
@@ -216,7 +269,19 @@ def add():
         db_mods.add_new_post(form.post_title.data, form.post_body.data, tag_values)
         return redirect(url_for('blog.preview'))
 
-    return render_template('add.html',  form=form, user_data=g.user_data, tag_values=tag_values, logged_in=g.logged_in)
+    return render_template('add_post.html',  form=form, user_data=g.user_data, tag_values=tag_values,
+                           logged_in=g.logged_in)
+
+
+@mod.route('add/', methods=['GET', 'POST'])
+@decorators.requires_login
+def add():
+
+    """
+    add a new post landing page - lets you choose if you'd like to add images, etc..
+    """
+
+    return render_template('add.html', user_data=g.user_data, logged_in=g.logged_in)
 
 
 @mod.route('edit/<post_id>/', methods=['GET', 'POST'])
