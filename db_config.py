@@ -8,11 +8,12 @@ class Blog(Model):
 
 
 class Posts(Blog):
-    post_id = IntegerField(primary_key=True)
+    #post_id = IntegerField(primary_key=True)
     title = CharField()
     body = TextField()
     visible = IntegerField()
     tags = CharField()
+    images = CharField()
 
 
 class UserData(Blog):

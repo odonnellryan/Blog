@@ -15,3 +15,8 @@
     {{ field(class_=class)|safe }}
     {{ field.label(class_=class)|safe }}
 {% endmacro %}
+
+{% macro render_image(field, class='None') %}
+    {{ field(class_=class)|safe }}
+    {{ field.label(class_=class)|safe }}
+{% endmacro %}

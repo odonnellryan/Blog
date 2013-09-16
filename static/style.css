@@ -129,6 +129,30 @@ input[type="checkbox"]:checked + label {
     background-color:#79CEED;
 }
 
+input.image[type="checkbox"] {
+    display:none;
+}
+input.image[type="checkbox"] + label {
+    display:inline-block;
+    text-align: center;
+    padding:.5em;
+    width:1em;
+    height:1em;
+    border-radius: 10px;
+    margin:.25em;
+    background-color: #79CEED;
+    cursor:pointer;
+}
+
+input.image[type="checkbox"]:checked + label {
+    background-color:#f42a00;
+}
+input.image[type="checkbox"] + label:before {
+    content: "✓";
+}
+input.image[type="checkbox"]:checked + label:before {
+    content: "X";
+}
 /*styles on divs and other stuff similar to that - basic page styling*/
 
 .logout {

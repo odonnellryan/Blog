@@ -4,29 +4,53 @@
   {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
 
   {% if post_id %}
-  <div class="pure-u-1-2">
-    <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
-    {% from "macro.html" import render_field %}
-    {% from "macro.html" import render_checkboxes %}
-    <form method=post action="{{ url_for('blog.edit', post_id=post_id) }}">
-      <dl>
-        {{ render_field(form.post_title) }}
-        {{ render_field(form.post_body) }}
-      </dl>
-      <div class="post_tag_holder">
-        {% for tag in tag_values %}
-            {{ render_checkboxes(tag_values[tag], class='input') }}
-        {% endfor %}
-      </div>
-      <input type=submit class="submit" value="Save Edit">
-    </form>
+  {% from "macro.html" import render_checkboxes %}
+ <div class="pure-u-1-2">
+ {% from "macro.html" import render_field %}
+            <form method=post action="{{ url_for('blog.edit', post_id=post_id) }}" enctype=multipart/form-data>
+ {% if images %}
+    <p>
+        Your available images:
+    </p>
+    {% for image in image_tags %}
+     {{ render_checkboxes(image_tags[image], class='image') }}
+    <code><img src="{{image}}" /> <input type=text value="<img src={{ image}}/>"></code>
+    {% endfor %}
+ {% endif %}
+  <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
+  {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
+                <p>
+                    <label for="image1">Image 1: </label>
+                    <input type="file" name="image1" id="image1">
+                </p>
+                <div>
+                    <p>
+                        <span id="addVar">+ Add Images</span>
+                    </p>
+                </div>
+                <p>
 
-    </div>
-    <div class="pure-u-1-2">
-        <div id=render_title>{{page_content['title']}}</div>
-        <div id=render_body>{{page_content['body_html'] | safe}}</div>
-    </div>
-
+                </p>
+              <dl>
+                {{ render_field(form.post_title) }}
+                {{ render_field(form.post_body) }}
+                <div class="post_tag_holder">
+                    {% if tag_values %}
+                        {% for tag in tag_values %}
+                            {{ render_checkboxes(tag_values[tag], class='input') }}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+              </dl>
+              <input type=submit class="submit" value="Save Changes">
+              <input type=submit class="submit" value="Save and Preview">
+        </form>
+        </div>
+        <div class="pure-u-1-2">
+            <div id=render_title>{{page_content['title']}}</div>
+            <div id=render_body>{{page_content['body_html'] | safe}}</div>
+        </div>
+        <script src="{{ url_for('static', filename='js/image_upload.js') }}"></script>
   {% else %}
         <div class="pure-u-1">
             <h2>Please select a post for you to edit.</h2>
@@ -37,6 +61,4 @@
         {% endfor %}
         </div>
   {% endif %}
-
-
 {% endblock %}

@@ -51,9 +51,11 @@
                             {{ user_data.blog_subtitle }}
                         </small>
                         <div class="pure-u-1"></div>
-                        {% for key in user_data.tags %}
-                          <span class="tags"><a href="{{url_for('blog.tagged', tag=key)}}">{{ key }}</a></span>
-                        {%endfor%}
+                        {% if user_data.tags %}
+                            {% for key in user_data.tags %}
+                            <span class="tags"><a href="{{url_for('blog.tagged', tag=key)}}">{{ key }}</a></span>
+                            {%endfor%}
+                        {% endif %}
                     </div>
                 </div>
                 <div class="pure-g-r main">

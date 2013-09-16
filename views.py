@@ -7,8 +7,7 @@ import db_mods
 import config
 import create_flat
 import helper_funcs
-import os
-from werkzeug.utils import secure_filename
+import image_mods
 from collections import OrderedDict
 from wtforms import BooleanField
 from login import _login, update_password, update_username
@@ -21,7 +20,8 @@ mod = Blueprint('blog', __name__, url_prefix='/')
 def before_request():
     g.db = config.DATABASE.connect()
     g.user_data = db_mods.get_user_data()
-    g.user_data.tags = g.user_data.tags.split(',')
+    if g.user_data.tags:
+        g.user_data.tags = g.user_data.tags.split(',')
     try:
         g.logged_in = session['LOGGED_IN']
     except KeyError:
@@ -74,13 +74,12 @@ def settings():
         form.tags.data = current_settings.tags
 
     if request.method == 'POST':
-        try:
-            db_mods.update_all_data(form.blog_title.data, form.blog_subtitle.data, form.full_name.data, form.tags.data,
-                                form.footer_text.data)
-            flash('Successfully updated user data')
-            return redirect(url_for('blog.preview'))
-        except Exception, e:
-            flash(e)
+
+        db_mods.update_all_data(form.blog_title.data, form.blog_subtitle.data, form.full_name.data, form.tags.data,
+                            form.footer_text.data)
+
+        flash('Successfully updated user data')
+        return redirect(url_for('blog.preview'))
 
     return render_template('settings.html', form=form, user_data=g.user_data, page_title="Blog Settings",
                            logged_in=g.logged_in)
@@ -189,6 +188,7 @@ def login():
 
 
 @mod.route('logout/', methods=['GET', 'POST'])
+@decorators.requires_login
 def logout():
     session.pop('LOGGED_IN')
     return redirect(url_for('blog.index'))
@@ -200,72 +200,45 @@ def forgot_password():
 
 
 @mod.route('add/images/', methods=['GET', 'POST'])
+@decorators.requires_login
 def add_images():
 
     """
     add images page
     """
 
-    image_form = forms.UploadImages(request.form)
-
-    return render_template('add_images.html', user_data=g.user_data, logged_in=g.logged_in,
-                           image_form=image_form)
-
-
-@mod.route('add/post/images/', methods=['GET', 'POST'])
-def add_post_images():
-
-    class NewPostTags(forms.NewPost):
-        pass
-
-    post_tags = db_mods.tag_array()
-
-    for name in post_tags:
-        setattr(NewPostTags, name, BooleanField(name))
-
-    form = NewPostTags(request.form)
-
-    tag_values = helper_funcs.return_method_dict(form, post_tags)
-
-    image_list=[]
-
     if request.method == 'POST':
-        images = request.files
-        for image in images:
-            file_ = images[image]
-            if file_ and helper_funcs.allowed_file(file_.filename):
-                filename = secure_filename(file_.filename)
-                file_path = os.path.join(config.UPLOAD_FOLDER, filename)
-                while True:
-                    try:
-                        with open(file_path):
-                            new_path = file_path.split(".")
-                            file_path = new_path[0] + "1." + new_path[1]
-                    except IOError:
-                        image_list.append(file_path)
-                        file_.save(file_path)
-                        break
 
-    return render_template('add_post.html',  form=form, user_data=g.user_data, tag_values=tag_values,
-                           logged_in=g.logged_in, images=image_list)
+        image_list = image_mods.call_image_tool(request.files)
+
+        post_id = db_mods.add_new_post('Post Title', 'Post Body', [], image_mods.comma_list_of_images(image_list))
+
+        print post_id
+
+        return redirect(url_for('blog.edit', post_id=post_id))
+
+    return render_template('add_images.html', user_data=g.user_data, logged_in=g.logged_in)
 
 
 @mod.route('add/post/', methods=['GET', 'POST'])
+@decorators.requires_login
 def add_post():
 
     class NewPostTags(forms.NewPost):
-        pass
-
+            pass
+    tag_values = []
     post_tags = db_mods.tag_array()
 
-    for name in post_tags:
-        setattr(NewPostTags, name, BooleanField(name))
+    if post_tags:
+        for name in post_tags:
+            setattr(NewPostTags, name, BooleanField(name))
+        form = NewPostTags(request.form)
+        tag_values = helper_funcs.return_method_dict(form, post_tags)
 
-    form = NewPostTags(request.form)
+    else:
+        form = NewPostTags(request.form)
 
-    tag_values = helper_funcs.return_method_dict(form, post_tags)
-
-    if request.method == 'POST' and form.validate():
+    if request.method == 'POST':
         db_mods.add_new_post(form.post_title.data, form.post_body.data, tag_values)
         return redirect(url_for('blog.preview'))
 
@@ -289,33 +262,84 @@ def add():
 @decorators.requires_login
 def edit(post_id=None):
 
-    class NewPostTags(forms.NewPost):
-        pass
-
-    post_tags = db_mods.tag_array()
-
-    for name in post_tags:
-        setattr(NewPostTags, name, BooleanField(name))
-
-    form = NewPostTags(request.form)
-
+    form = []
     page_content = []
+    images = []
+    tagged = []
+    post_tags = []
+    image_tagged_values = []
+    tag_values = []
+
+    if post_id:
+        class NewPostTags(forms.NewPost):
+            pass
+
+        post_tags = db_mods.tag_array()
+
+        if post_tags:
+            for name in post_tags:
+                setattr(NewPostTags, name, BooleanField(name))
+
+        image_array = image_mods.image_array(post_id)
+
+        if image_array:
+            for im_name in image_array:
+                setattr(NewPostTags, im_name, BooleanField(""))
+
+        form = NewPostTags(request.form)
+        if post_tags:
+            tag_values = helper_funcs.return_method_dict(form, post_tags)
+        if image_array:
+            image_tagged_values = helper_funcs.return_method_dict(form, image_array)
+
 
     if not post_id:
         page_content = db_mods.get_all_titles_and_ids()
 
-    elif not request.method == 'POST' :
+    elif not request.method == 'POST' and post_id:
+
         page_content = db_mods.get_post_content(post_id)
         form.post_title.data = page_content['title']
         form.post_body.data = page_content['body']
+        tagged = page_content['tags']
+
+        # checks the checkbox if the tag is attached to the post
+        if post_tags:
+            for tag in tagged:
+                if tag in tag_values:
+                    tag_values[tag].data = 'y'
+
+
+        images = page_content['images']
         page_content['body_html'] = blog_mods.get_html_content(page_content['body'])
 
-    if request.method == 'POST' and form.validate():
-        db_mods.edit_post(form.post_title.data, form.post_body.data, post_id)
-        return redirect(url_for('blog.edit'))
+    if request.method == 'POST':
+
+        if image_tagged_values:
+            image_mods.remove_images(post_id, image_tagged_values)
+
+
+        for tag in image_tagged_values:
+            print image_tagged_values[tag].data
+
+        uploaded_images = image_mods.comma_list_of_images(image_mods.call_image_tool(request.files))
+        current_images = image_mods.comma_list_of_images(image_mods.image_array(post_id))
+
+        image_list = []
+
+        if uploaded_images:
+            image_list.append(uploaded_images)
+        if current_images:
+            image_list.append(current_images)
+
+        image_list = image_mods.comma_list_of_images(image_list)
+
+        db_mods.edit_post(form.post_title.data, form.post_body.data, post_id, tag_values, image_list)
+        return redirect(url_for('blog.edit', post_id=post_id))
 
     return render_template('edit.html',  form=form, page_content=page_content, post_id=post_id, user_data=g.user_data,
-                           tag_values = helper_funcs.return_method_dict(form, post_tags), logged_in=g.logged_in)
+                           tag_values=tag_values, logged_in=g.logged_in,
+                           images=images, tagged=tagged, image_tags=image_tagged_values)
 
 
 @mod.route('delete/<post_id>', methods=['GET', 'POST'])
