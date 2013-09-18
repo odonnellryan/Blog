@@ -14,7 +14,8 @@ from login import _login, update_password, update_username
 
 
 mod = Blueprint('blog', __name__, url_prefix='/')
-
+tagged_url = 'blog.tagged'
+preview_url = 'blog.preview'
 
 @mod.before_request
 def before_request():
@@ -48,7 +49,8 @@ def index():
     #blog_statistics = {'blog.statistics' : 'View Blog Statistics'}
 
     return render_template('admin.html', render_html=blog_mods.get_html_content, post_mods=post_mods,
-                           blog_settings=blog_settings, user_data=g.user_data, logged_in=g.logged_in)
+                           blog_settings=blog_settings, user_data=g.user_data, logged_in=g.logged_in
+                            , tagged_url=tagged_url)
 
 
 @mod.route('settings/', methods=['GET', 'POST'])
@@ -82,7 +84,7 @@ def settings():
         return redirect(url_for('blog.preview'))
 
     return render_template('settings.html', form=form, user_data=g.user_data, page_title="Blog Settings",
-                           logged_in=g.logged_in)
+                           logged_in=g.logged_in, tagged_url=tagged_url)
 
 
 @mod.route('settings/change_login/', methods=['GET', 'POST'])
@@ -148,14 +150,13 @@ def preview(page=None):
     else:
         previous_page = 0
 
-
     return render_template('preview.html', page=page, posts=posts, render_html=blog_mods.get_html_content, footer=footer,
                            next_page=next_page, previous_page=previous_page, user_data=g.user_data,
-                           logged_in=g.logged_in)
+                           logged_in=g.logged_in, tagged_url=tagged_url,preview_url=preview_url)
 
 
-@mod.route('tagged/<tag>', methods=['GET', 'POST'])
-@mod.route('tagged/', methods=['GET', 'POST'])
+@mod.route('preview/tagged/<tag>', methods=['GET', 'POST'])
+@mod.route('preview/tagged/', methods=['GET', 'POST'])
 @decorators.requires_login
 def tagged(tag=None):
 
@@ -166,7 +167,22 @@ def tagged(tag=None):
         posts = db_mods.search_by_tag(tag)
 
     return render_template('tagged.html', tags=tags, render_html=blog_mods.get_html_content, user_data=g.user_data,
-                           posts=posts, logged_in=g.logged_in)
+                           posts=posts, logged_in=g.logged_in, tagged_url=tagged_url)
+
+
+@mod.route('preview/post/<id>', methods=['GET', 'POST'])
+@mod.route('preview/post/', methods=['GET', 'POST'])
+@decorators.requires_login
+def view_post(tag=None):
+
+    tags = db_mods.tag_array()
+    posts = None
+
+    if tag:
+        posts = db_mods.search_by_tag(tag)
+
+    return render_template('preview.html', tags=tags, render_html=blog_mods.get_html_content, user_data=g.user_data,
+                           posts=posts, logged_in=g.logged_in, tagged_url=tagged_url)
 
 
 @mod.route('login/', methods=['GET', 'POST'])
@@ -184,7 +200,7 @@ def login():
         else:
             flash('Sorry, you put in the wrong information')
 
-    return render_template('login.html', form=form, user_data=g.user_data, logged_in=g.logged_in)
+    return render_template('login.html', form=form, user_data=g.user_data, logged_in=g.logged_in, tagged_url=tagged_url)
 
 
 @mod.route('logout/', methods=['GET', 'POST'])
@@ -196,7 +212,7 @@ def logout():
 
 @mod.route('forgot_password/')
 def forgot_password():
-    return render_template('forgot_password.html', user_data=g.user_data, logged_in=g.logged_in)
+    return render_template('forgot_password.html', user_data=g.user_data, logged_in=g.logged_in, tagged_url=tagged_url)
 
 
 @mod.route('add/images/', methods=['GET', 'POST'])
@@ -217,7 +233,7 @@ def add_images():
 
         return redirect(url_for('blog.edit', post_id=post_id))
 
-    return render_template('add_images.html', user_data=g.user_data, logged_in=g.logged_in)
+    return render_template('add_images.html', user_data=g.user_data, logged_in=g.logged_in, tagged_url=tagged_url)
 
 
 @mod.route('add/post/', methods=['GET', 'POST'])
@@ -243,7 +259,7 @@ def add_post():
         return redirect(url_for('blog.preview'))
 
     return render_template('add_post.html',  form=form, user_data=g.user_data, tag_values=tag_values,
-                           logged_in=g.logged_in)
+                           logged_in=g.logged_in, tagged_url=tagged_url)
 
 
 @mod.route('add/', methods=['GET', 'POST'])
@@ -254,7 +270,7 @@ def add():
     add a new post landing page - lets you choose if you'd like to add images, etc..
     """
 
-    return render_template('add.html', user_data=g.user_data, logged_in=g.logged_in)
+    return render_template('add.html', user_data=g.user_data, logged_in=g.logged_in, tagged_url=tagged_url)
 
 
 @mod.route('edit/<post_id>/', methods=['GET', 'POST'])
@@ -339,7 +355,7 @@ def edit(post_id=None):
 
     return render_template('edit.html',  form=form, page_content=page_content, post_id=post_id, user_data=g.user_data,
                            tag_values=tag_values, logged_in=g.logged_in,
-                           images=images, tagged=tagged, image_tags=image_tagged_values)
+                           images=images, tagged=tagged, image_tags=image_tagged_values, tagged_url=tagged_url)
 
 
 @mod.route('delete/<post_id>', methods=['GET', 'POST'])
@@ -360,7 +376,7 @@ def delete(post_id=None):
         return redirect(url_for('blog.index'))
 
     return render_template('delete.html', page_content=_page_content, post_id=post_id, form=form, user_data=g.user_data,
-                           logged_in=g.logged_in)
+                           logged_in=g.logged_in, tagged_url=tagged_url)
 
 
 @mod.route('commit/', methods=['GET', 'POST'])
@@ -369,12 +385,13 @@ def commit():
 
     form = forms.Commit(request.form)
 
-    if request.method == 'POST' and form.validate() and form.commit.data == True:
+    if request.method == 'POST' and form.commit.data == True:
         create_flat.freezer.freeze()
         flash('Successfully Committed Your Files')
         return redirect(url_for('blog.index'))
 
-    return render_template('commit.html',  form=form, user_data=g.user_data, logged_in=g.logged_in)
+    return render_template('commit.html',  form=form, user_data=g.user_data, logged_in=g.logged_in,
+                           tagged_url=tagged_url)
 
 
 @mod.route('_render_temp_body/', methods=['GET', 'POST'])
@@ -395,3 +412,13 @@ def render_temp_title():
         return jsonify(result=get_markup)
     except:
         return("")
+
+
+@mod.route('404.html')
+def error_page_not_found():
+    user_data = db_mods.get_user_data()
+    if user_data.tags:
+        user_data.tags = user_data.tags.split(',')
+    return render_template('404.html', user_data=user_data, page_title="404", tagged_url=tagged_url)
+
+

@@ -3,10 +3,10 @@
                 <div class="post-content">
                     <div class="pure-u-1">
                         {% if previous_page %}
-                            <span class="position-left"><a href="{{ url_for('blog.preview', page=previous_page) }}">Previous Page</a></span>
+                            <span class="position-left"><a href="{{ url_for(preview_url, page=previous_page) }}">Previous Page</a></span>
                         {% endif %}
                         {% if next_page %}
-                            <span class="position-right"><a href="{{ url_for('blog.preview', page=next_page) }}">Next Page</a></span>
+                            <span class="position-right"><a href="{{ url_for(preview_url, page=next_page) }}">Next Page</a></span>
                         {% endif %}
                     </div>
                     {% for post in posts %}
@@ -33,10 +33,10 @@
                     {% endfor %}
                     <div class="pure-u-1">
                         {% if previous_page %}
-                            <span class="position-left"><a href="{{ url_for('blog.preview', page=previous_page) }}">Previous Page</a></span>
+                            <span class="position-left"><a href="{{ url_for(preview_url, page=previous_page) }}">Previous Page</a></span>
                         {% endif %}
                         {% if next_page %}
-                            <span class="position-right"><a href="{{ url_for('blog.preview', page=next_page) }}">Next Page</a></span>
+                            <span class="position-right"><a href="{{ url_for(preview_url, page=next_page) }}">Next Page</a></span>
                         {% endif %}
                     </div>
                 </div>

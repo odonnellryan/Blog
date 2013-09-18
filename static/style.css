@@ -114,10 +114,10 @@ hr {
 
 /* below are element-styles */
 
-input[type="checkbox"] {
+input.tag[type="checkbox"] {
     display:none;
 }
-input[type="checkbox"] + label {
+input.tag[type="checkbox"] + label {
     display:inline-block;
     padding:.5em;
     border-radius: 10px;
@@ -125,7 +125,7 @@ input[type="checkbox"] + label {
     background-color: #e7e7e7;
     cursor:pointer;
 }
-input[type="checkbox"]:checked + label {
+input.tag[type="checkbox"]:checked + label {
     background-color:#79CEED;
 }
 

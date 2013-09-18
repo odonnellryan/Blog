@@ -37,7 +37,7 @@
                 <div class="post_tag_holder">
                     {% if tag_values %}
                         {% for tag in tag_values %}
-                            {{ render_checkboxes(tag_values[tag], class='input') }}
+                            {{ render_checkboxes(tag_values[tag], class='tag') }}
                         {% endfor %}
                     {% endif %}
                 </div>

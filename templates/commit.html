@@ -1,19 +1,23 @@
 {% extends "index.html" %}
-        {% block body %}
-            {% from "macro.html" import render_field %}
+
+{% block body %}
+    <div class="pure-u-1">
+            {% from "macro.html" import render_checkboxes %}
             <form method=post action="{{ url_for('blog.commit') }}">
-              <dl>
-                {{ render_field(form.commit) }}
-              </dl>
-              <p><input type=submit value="Create Post">
-            </form>
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}
+    <dl>
+        {{ render_checkboxes(form.commit, class="tag") }}
+    </dl>
+    <p>
+        <input type=submit value="Create Post" />
+        </form>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
                 <ul class=flashes>
-                {% for message in messages %}
-                  <li>{{ message }}</li>
-                {% endfor %}
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
                 </ul>
-              {% endif %}
-            {% endwith %}
-        {%endblock%}
+            {% endif %}
+        {% endwith %}
+    </div>
+{%endblock%}

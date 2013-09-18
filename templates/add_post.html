@@ -19,7 +19,7 @@
         {{ render_field(form.post_body) }}
         <div class="post_tag_holder">
             {% for tag in tag_values %}
-                {{ render_checkboxes(tag_values[tag], class='input') }}
+                {{ render_checkboxes(tag_values[tag], class='tag') }}
             {% endfor %}
         </div>
       </dl>
