@@ -11,6 +11,7 @@ app.register_blueprint(blog)
 @app.errorhandler(404)
 def page_not_found(e):
     user_data = db_mods.get_user_data()
-    user_data.tags = user_data.tags.split(',')
+    if user_data.tags:
+        user_data.tags = user_data.tags.split(',')
     return render_template('404.html', user_data=user_data), 404
 
