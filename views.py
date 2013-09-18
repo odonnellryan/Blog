@@ -37,7 +37,7 @@ def teardown_request(exception):
         db.close()
 
 
-@mod.route('/', methods=['GET', 'POST'])
+@mod.route('admin/', methods=['GET', 'POST'])
 @decorators.requires_login
 def index():
     """admin page"""
