@@ -13,7 +13,7 @@ from wtforms import BooleanField
 from login import _login, update_password, update_username
 
 
-mod = Blueprint('blog', __name__, url_prefix='/admin')
+mod = Blueprint('blog', __name__, url_prefix='/admin/')
 tagged_url = 'blog.tagged'
 preview_url = 'blog.preview'
 preview_post_url = 'blog.preview_post'
