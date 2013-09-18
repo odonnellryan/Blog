@@ -13,7 +13,7 @@ from wtforms import BooleanField
 from login import _login, update_password, update_username
 
 
-mod = Blueprint('blog', __name__, url_prefix='/')
+mod = Blueprint('blog', __name__, url_prefix='/admin')
 tagged_url = 'blog.tagged'
 preview_url = 'blog.preview'
 preview_post_url = 'blog.preview_post'
@@ -37,7 +37,7 @@ def teardown_request(exception):
         db.close()
 
 
-@mod.route('admin/', methods=['GET', 'POST'])
+@mod.route('/', methods=['GET', 'POST'])
 @decorators.requires_login
 def index():
     """admin page"""
