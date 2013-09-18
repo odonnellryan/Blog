@@ -6,8 +6,11 @@ from flask_frozen import Freezer
 f_app = Flask(__name__)
 f_app.config.from_object('config')
 f_mod = Blueprint('f_blog', __name__, url_prefix='/')
+
 tagged_url = 'f_blog.tagged'
 preview_url = 'f_blog.generate_blog_pages'
+preview_post_url = "f_blog.preview_post"
+
 user_data = db_mods.get_user_data()
 if user_data.tags:
     user_data.tags = user_data.tags.split(',')
@@ -36,7 +39,7 @@ def generate_blog_pages(page=1):
 
     return render_template('preview.html', page=page, posts=posts, render_html=blog_mods.get_html_content,
                            next_page=next_page, previous_page=previous_page, user_data=user_data,
-                           tagged_url=tagged_url, preview_url=preview_url)
+                           tagged_url=tagged_url, preview_url=preview_url, preview_post_url=preview_post_url)
 
 @f_mod.route('tagged/<tag>/', methods=['GET', 'POST'])
 @f_mod.route('tagged/', methods=['GET', 'POST'])
@@ -49,7 +52,16 @@ def tagged(tag=None):
         posts = db_mods.search_by_tag(tag)
 
     return render_template('tagged.html', tags=tags, render_html=blog_mods.get_html_content, user_data=user_data,
-                           posts=posts, tagged_url=tagged_url)
+                           posts=posts, tagged_url=tagged_url, preview_post_url=preview_post_url)
+
+
+@f_mod.route('post/<post_id>/', methods=['GET', 'POST'])
+def preview_post(post_id=None):
+
+    page_content = db_mods.get_post_content(post_id)
+
+    return render_template('preview_post.html', page_content=page_content, user_data=user_data,
+                            tagged_url=tagged_url,render_html=blog_mods.get_html_content)
 
 @f_mod.route('404.html')
 def error_page_not_found():

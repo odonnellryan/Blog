@@ -16,6 +16,7 @@ from login import _login, update_password, update_username
 mod = Blueprint('blog', __name__, url_prefix='/')
 tagged_url = 'blog.tagged'
 preview_url = 'blog.preview'
+preview_post_url = 'blog.preview_post'
 
 @mod.before_request
 def before_request():
@@ -114,7 +115,7 @@ def change_login():
 
 
     return render_template('change_login.html', form=form, user_data=g.user_data,
-                           logged_in=g.logged_in)
+                           logged_in=g.logged_in, tagged_url=tagged_url)
 
 
 @mod.route('preview/', methods=['GET', 'POST'])
@@ -152,7 +153,8 @@ def preview(page=None):
 
     return render_template('preview.html', page=page, posts=posts, render_html=blog_mods.get_html_content, footer=footer,
                            next_page=next_page, previous_page=previous_page, user_data=g.user_data,
-                           logged_in=g.logged_in, tagged_url=tagged_url,preview_url=preview_url)
+                           logged_in=g.logged_in, tagged_url=tagged_url,
+                           preview_url=preview_url, preview_post_url=preview_post_url)
 
 
 @mod.route('preview/tagged/<tag>', methods=['GET', 'POST'])
@@ -167,22 +169,17 @@ def tagged(tag=None):
         posts = db_mods.search_by_tag(tag)
 
     return render_template('tagged.html', tags=tags, render_html=blog_mods.get_html_content, user_data=g.user_data,
-                           posts=posts, logged_in=g.logged_in, tagged_url=tagged_url)
+                           posts=posts, logged_in=g.logged_in, tagged_url=tagged_url, preview_post_url=preview_post_url)
 
 
-@mod.route('preview/post/<id>', methods=['GET', 'POST'])
-@mod.route('preview/post/', methods=['GET', 'POST'])
+@mod.route('preview/post/<post_id>/', methods=['GET', 'POST'])
 @decorators.requires_login
-def view_post(tag=None):
+def preview_post(post_id=None):
 
-    tags = db_mods.tag_array()
-    posts = None
+    page_content = db_mods.get_post_content(post_id)
 
-    if tag:
-        posts = db_mods.search_by_tag(tag)
-
-    return render_template('preview.html', tags=tags, render_html=blog_mods.get_html_content, user_data=g.user_data,
-                           posts=posts, logged_in=g.logged_in, tagged_url=tagged_url)
+    return render_template('preview_post.html', page_content=page_content, user_data=g.user_data,
+                           logged_in=g.logged_in, tagged_url=tagged_url,render_html=blog_mods.get_html_content)
 
 
 @mod.route('login/', methods=['GET', 'POST'])
@@ -317,14 +314,15 @@ def edit(post_id=None):
         page_content = db_mods.get_post_content(post_id)
         form.post_title.data = page_content['title']
         form.post_body.data = page_content['body']
+
         tagged = page_content['tags']
 
         # checks the checkbox if the tag is attached to the post
         if post_tags:
-            for tag in tagged:
-                if tag in tag_values:
-                    tag_values[tag].data = 'y'
-
+            if tagged:
+                for tag in tagged:
+                    if tag in tag_values:
+                        tag_values[tag].data = 'y'
 
         images = page_content['images']
         page_content['body_html'] = blog_mods.get_html_content(page_content['body'])
@@ -351,6 +349,10 @@ def edit(post_id=None):
         image_list = image_mods.comma_list_of_images(image_list)
 
         db_mods.edit_post(form.post_title.data, form.post_body.data, post_id, tag_values, image_list)
+
+        if 'SavePreview' in request.form:
+            return redirect(url_for(preview_url))
+
         return redirect(url_for('blog.edit', post_id=post_id))
 
     return render_template('edit.html',  form=form, page_content=page_content, post_id=post_id, user_data=g.user_data,

@@ -1,0 +1,27 @@
+{% extends "index.html" %}
+{% block body %}
+    <div class="post-content">
+        <div class="pure-u-1">
+        </div>
+        <div class="pure-u-1">
+            <span class=post-title>
+                <h1><a id="{{ page_content.title }}" href="#{{ page_content.title }}">{{ page_content.title }}</a></h1>
+            </span>
+        </div>
+        <div class="pure-u-1 post-body">
+            <span class=post-body>
+            {{ render_html(page_content.body) | safe }}
+            </span>
+        </div>
+        <div class="pure-u-1 post_tags_display">
+            {% if page_content.tags %}
+                {% for tag in page_content.tags %}
+                    <span class="display_tag">
+                        {{ tag }}
+                    </span>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <hr>
+    </div>
+{%endblock%}

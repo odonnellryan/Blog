@@ -7,6 +7,9 @@
                                 <span class=post-title>
                                     <h1><a id="{{ post.title }}" href="#{{ post.title }}">{{ post.title }}</a></h1>
                                 </span>
+                                <span class="post-link">
+                                    <a id="{{ post.id }}" href="{{ url_for(preview_post_url, post_id=post.id) }}">Link to Post</a>
+                                </span>
                             </div>
                             <div class="pure-u-1 post-body">
                                 <span class=post-body>

@@ -87,6 +87,7 @@ h6 { font-size: .75em;}
 
 h1 a {
     color:#000;
+    display:block;
 }
 
 h2 a:hover {
@@ -310,6 +311,11 @@ span.tags a:hover {
 .post-content {
     margin: 0 auto;
     padding-top:2em;
+}
+
+.post-link {
+    float:right;
+    display:block;
 }
 
 .position-right {

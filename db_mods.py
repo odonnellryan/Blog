@@ -96,6 +96,8 @@ def check_user(get_title, get_user):
 
 def add_new_post(get_title, get_body, get_tags, get_comma_image_list=None):
     tags = post_tag_identifier(get_tags)
+    if not tags:
+        tags = None
     insert_blog = blog()
     insert_blog.title = get_title
     insert_blog.body = get_body
@@ -107,6 +109,8 @@ def add_new_post(get_title, get_body, get_tags, get_comma_image_list=None):
 
 def edit_post(get_title, get_body, get_post_id, get_tags, get_comma_image_list):
     tags = post_tag_identifier(get_tags)
+    if not tags:
+        tags = None
     if check_if_post_exists(get_post_id):
         post = blog
         update = post.update(title=get_title, body=get_body, tags=tags, images=get_comma_image_list
