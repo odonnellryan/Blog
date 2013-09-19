@@ -387,10 +387,14 @@ def commit():
 
     form = forms.Commit(request.form)
 
-    if request.method == 'POST' and form.commit.data == True:
-        create_flat.freezer.freeze()
-        flash('Successfully Committed Your Files')
-        return redirect(url_for('blog.index'))
+    if request.method == 'POST':
+        if form.commit.data == True:
+            create_flat.freezer.freeze()
+            flash('Successfully Committed Your Files')
+            return redirect(url_for('blog.index'))
+        else:
+            flash("Please click Commit to Flat Files if you wish to Commit your changes.")
+            return redirect(url_for('blog.commit'))
 
     return render_template('commit.html',  form=form, user_data=g.user_data, logged_in=g.logged_in,
                            tagged_url=tagged_url)
@@ -416,11 +420,10 @@ def render_temp_title():
         return("")
 
 
-@mod.route('404.html')
-def error_page_not_found():
+@mod.errorhandler(404)
+def page_not_found(e):
     user_data = db_mods.get_user_data()
     if user_data.tags:
         user_data.tags = user_data.tags.split(',')
-    return render_template('404.html', user_data=user_data, page_title="404", tagged_url=tagged_url)
-
+    return render_template('404.html', user_data=user_data, tagged_url=tagged_url), 404
 
