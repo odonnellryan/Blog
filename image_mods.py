@@ -30,15 +30,16 @@ def update_images(post_id, image_list):
 
 def remove_images(post_id, images_to_remove):
     current_images = image_array(post_id)
-    print current_images
-    remove = db_mods.post_tag_identifier(images_to_remove).split(",")
-    for image in remove:
-        current_images.remove(image)
-        try:
-            os.remove(image.encode()[1:])
-        except:
-            pass
-    return update_images(post_id, current_images)
+    remove = db_mods.post_tag_identifier(images_to_remove)
+    if remove:
+        remove = remove.split(",")
+        for image in remove:
+            current_images.remove(image)
+            try:
+                os.remove(image.encode()[1:])
+            except IOError:
+                pass
+        return update_images(post_id, current_images)
 
 
 def image_name_tool(get_file, get_path, get_filename):

@@ -297,11 +297,10 @@ def edit(post_id=None):
         tagged = page_content['tags']
 
         # checks the checkbox if the tag is attached to the post
-        if post_tags:
-            if tagged:
-                for tag in tagged:
-                    if tag in tag_values:
-                        tag_values[tag].data = 'y'
+        if post_tags and tagged:
+            for tag in tagged:
+                if tag in tag_values:
+                    tag_values[tag].data = 'y'
 
         images = page_content['images']
         page_content['body_html'] = blog_mods.get_html_content(page_content['body'])
