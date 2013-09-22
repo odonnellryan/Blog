@@ -41,14 +41,10 @@ def teardown_request(exception):
 @decorators.requires_login
 def index():
     """admin page"""
-
     post_mods = OrderedDict([('blog.add', 'Add a Post'), ('blog.delete', 'Delete a Post'), ('blog.edit', 'Edit Posts'),
                    ('blog.preview', 'Preview Main Page'), ('blog.commit', 'Commit your Blog to Flatfile')])
-
     blog_settings = OrderedDict([('blog.settings', 'Change Blog Settings'), ('blog.change_login', 'Change Login Information')])
-
     #blog_statistics = {'blog.statistics' : 'View Blog Statistics'}
-
     return render_template('admin.html', render_html=blog_mods.get_html_content, post_mods=post_mods,
                            blog_settings=blog_settings, user_data=g.user_data, logged_in=g.logged_in
                             , tagged_url=tagged_url)
@@ -62,25 +58,18 @@ def settings():
 
     form = forms.BlogSettings(request.form)
 
-    if form.logo_image.data and request.method == 'POST':
-        image_data = request.files[form.logo_image.name].read()
-        open('/static/imgs/logo.jpg', 'w').write(image_data)
-
     if not request.method == 'POST':
-
         current_settings = db_mods.get_user_data()
-
         form.full_name.data = current_settings.full_name
         form.blog_title.data = current_settings.blog_title
         form.blog_subtitle.data = current_settings.blog_subtitle
         form.footer_text.data = current_settings.footer_text
         form.tags.data = current_settings.tags
 
-    if request.method == 'POST':
-
+    if request.method == 'POST' and form.validate():
+        image_mods.image_tool_logo(request.files)
         db_mods.update_all_data(form.blog_title.data, form.blog_subtitle.data, form.full_name.data, form.tags.data,
                             form.footer_text.data)
-
         flash('Successfully updated user data')
         return redirect(url_for('blog.preview'))
 
@@ -129,7 +118,7 @@ def preview(page=None):
     else:
         try:
             int(page)
-        except:
+        except TypeError:
             return redirect(url_for('blog.preview', page=1))
 
     if int(page) < 0 or not page:
@@ -138,7 +127,6 @@ def preview(page=None):
         posts = db_mods.paginate_visible_posts(int(page))
 
     page_count = blog_mods.get_number_of_visible_pages()
-
     pagination = blog_mods.pagination(page, page_count)
 
     if not pagination['next_page'] == 0:
@@ -175,9 +163,7 @@ def tagged(tag=None):
 @mod.route('preview/post/<post_id>/', methods=['GET', 'POST'])
 @decorators.requires_login
 def preview_post(post_id=None):
-
     page_content = db_mods.get_post_content(post_id)
-
     return render_template('preview_post.html', page_content=page_content, user_data=g.user_data,
                            logged_in=g.logged_in, tagged_url=tagged_url,render_html=blog_mods.get_html_content)
 
@@ -221,15 +207,9 @@ def add_images():
     """
 
     if request.method == 'POST':
-
-        image_list = image_mods.call_image_tool(request.files)
-
+        image_list = image_mods.call_image_tool_posts(request.files)
         post_id = db_mods.add_new_post('Post Title', 'Post Body', [], image_mods.comma_list_of_images(image_list))
-
-        print post_id
-
         return redirect(url_for('blog.edit', post_id=post_id))
-
     return render_template('add_images.html', user_data=g.user_data, logged_in=g.logged_in, tagged_url=tagged_url)
 
 
@@ -314,7 +294,6 @@ def edit(post_id=None):
         page_content = db_mods.get_post_content(post_id)
         form.post_title.data = page_content['title']
         form.post_body.data = page_content['body']
-
         tagged = page_content['tags']
 
         # checks the checkbox if the tag is attached to the post
@@ -332,11 +311,7 @@ def edit(post_id=None):
         if image_tagged_values:
             image_mods.remove_images(post_id, image_tagged_values)
 
-
-        for tag in image_tagged_values:
-            print image_tagged_values[tag].data
-
-        uploaded_images = image_mods.comma_list_of_images(image_mods.call_image_tool(request.files))
+        uploaded_images = image_mods.comma_list_of_images(image_mods.call_image_tool_posts(request.files))
         current_images = image_mods.comma_list_of_images(image_mods.image_array(post_id))
 
         image_list = []
@@ -347,7 +322,6 @@ def edit(post_id=None):
             image_list.append(current_images)
 
         image_list = image_mods.comma_list_of_images(image_list)
-
         db_mods.edit_post(form.post_title.data, form.post_body.data, post_id, tag_values, image_list)
 
         if 'SavePreview' in request.form:

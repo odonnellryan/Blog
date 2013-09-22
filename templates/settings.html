@@ -4,7 +4,7 @@
                 <h1>Change your User-Defined Settings</h1>
                 <hr>
                 {% from "macro.html" import render_field %}
-                <form method=post action="{{ url_for('blog.settings') }}">
+                <form method=post action="{{ url_for('blog.settings') }}" enctype=multipart/form-data>
                   <dl>
                       {{ render_field(form.blog_title) }}
                       {{ render_field(form.blog_subtitle) }}

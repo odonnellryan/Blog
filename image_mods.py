@@ -73,7 +73,7 @@ def image_name_tool(get_file, get_path, get_filename):
     return image_web_path
 
 
-def call_image_tool(images):
+def call_image_tool_posts(images):
     image_list = []
     for image in images:
         file_ = images[image]
@@ -81,4 +81,15 @@ def call_image_tool(images):
             filename = secure_filename(file_.filename).replace(",", "")
             file_path = os.path.join(config.UPLOAD_FOLDER, filename)
             image_list.append(image_name_tool(file_, file_path, filename))
+    return image_list
+
+
+def image_tool_logo(images):
+    image_list = []
+    for image in images:
+        file_ = images[image]
+        if file_ and helper_funcs.allowed_file(file_.filename):
+            filename = 'logo.jpg'
+            file_path = os.path.join('static/imgs/', filename)
+            file_.save(file_path)
     return image_list
