@@ -1,32 +1,30 @@
 {% extends "index.html" %}
 {% block body %}
 
-  {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
+    {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
 
-  {% if post_id %}
-  <div class="pure-u-1">
-    <h1>Please select the post you wish to delete.</h1>
-    <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
-    {% from "macro.html" import render_field %}
-
-    <form method=post action="{{ url_for('blog.delete', post_id=post_id) }}">
-      Are you sure you want to delete post: {{ page_content['title'] }}
-      <dl>
-        {{ render_field(form.delete) }}
-      </dl>
-      <p><input type=submit value="Create Post">
-    </form>
-    </div>
-
-  {% else %}
-        <div class="pure-u-1">
-        {% for key in page_content %}
-            <p>
-                <a href="{{ url_for('blog.delete', post_id = key) }}">{{ page_content[key] }}</a>
-            </p>
-        {% endfor %}
+    {% if post_id %}
+        <div class="pure-u-1 center">
+            <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
+            {% from "macro.html" import render_checkboxes %}
+            <form method=post action="{{ url_for('blog.delete', post_id=post_id) }}" class="pure-form pure-form-aligned">
+                Are you sure you want to delete the post:  {{ page_content['title'] }}
+                <dl>
+                    {{ render_checkboxes(form.delete, class='tag') }}
+                </dl>
+                <p><input type="submit" class="button b-orange" value="Delete Post">
+            </form>
         </div>
-  {% endif %}
+    {% else %}
+        <div class="pure-u-1">
+            <h1>Please select the post you wish to delete.</h1>
+            {% for key in page_content %}
+                <p>
+                    <a href="{{ url_for('blog.delete', post_id = key) }}">{{ page_content[key] }}</a>
+                </p>
+            {% endfor %}
+        </div>
+    {% endif %}
 
 
 {% endblock %}

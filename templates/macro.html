@@ -1,6 +1,7 @@
 {% macro render_field(field, class='None') %}
-      <dt>{{ field.label(class_=class)|safe }}</dt>
-      <dd>{{ field(class_=class)|safe }}
+    <div class="pure-control-group">
+      {{ field.label(class_=class)|safe }}
+      {{ field(class_=class)|safe }}
       {% if field.errors %}
         <ul class=errors>
         {% for error in field.errors %}
@@ -8,7 +9,7 @@
         {% endfor %}
         </ul>
       {% endif %}
-      </dd>
+    </div>
 {% endmacro %}
 
 {% macro render_checkboxes(field, class='None') %}

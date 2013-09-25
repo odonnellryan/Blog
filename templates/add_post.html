@@ -13,7 +13,7 @@
   {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
     {% from "macro.html" import render_field %}
      {% from "macro.html" import render_checkboxes %}
-    <form method=post action="{{ url_for('blog.add_post') }}">
+    <form method=post action="{{ url_for('blog.add_post') }}" class="pure-form">
       <dl>
         {{ render_field(form.post_title) }}
         {{ render_field(form.post_body) }}

@@ -1,7 +1,7 @@
 {% extends "index.html" %}
     {% block body %}
         {% from "macro.html" import render_field %}
-        <form method=post action="{{ url_for('blog.change_login') }}">
+        <form method=post action="{{ url_for('blog.change_login') }}" class="pure-form pure-form-aligned">
             <div class="pure-u-1 center">
                 <dl>
                     <h3>Current Login Credentials:</h3>
