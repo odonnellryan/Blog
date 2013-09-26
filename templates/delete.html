@@ -7,8 +7,9 @@
         <div class="pure-u-1 center">
             <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
             {% from "macro.html" import render_checkboxes %}
-            <form method=post action="{{ url_for('blog.delete', post_id=post_id) }}" class="pure-form pure-form-aligned">
-                Are you sure you want to delete the post:  {{ page_content['title'] }}
+            <form method=post action="{{ url_for('blog.delete', post_id=post_id) }}"
+                  class="pure-form pure-form-aligned">
+                Are you sure you want to delete the post: {{ page_content['title'] }}
                 <dl>
                     {{ render_checkboxes(form.delete, class='tag') }}
                 </dl>

@@ -2,13 +2,13 @@
 
 {% block body %}
     <div class="pure-u-1">
-            {% from "macro.html" import render_checkboxes %}
-            <form method=post action="{{ url_for('blog.commit') }}">
-    <dl>
-        {{ render_checkboxes(form.commit, class="tag") }}
-    </dl>
-    <p>
-        <input type=submit class="submit" value="Commit Preview to Flat Files" />
+        {% from "macro.html" import render_checkboxes %}
+        <form method=post action="{{ url_for('blog.commit') }}">
+            <dl>
+                {{ render_checkboxes(form.commit, class="tag") }}
+            </dl>
+            <p>
+                <input type=submit class="submit" value="Commit Preview to Flat Files"/>
         </form>
     </div>
-{%endblock%}
+{% endblock %}

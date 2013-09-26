@@ -1,22 +1,24 @@
 {% extends "index.html" %}
 {% block body %}
- <div class="pure-u-1-2">
-  <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
-  {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
+    <div class="pure-u-1-2">
+        <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
+        {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
+
         <form method="post" action="{{ url_for('blog.add_images') }}" enctype=multipart/form-data>
-        <p>
-            <label for="image1">Image 1: </label>
-            <input type="file" name="image1" id="image1">
-        </p>
-        <div>
             <p>
-                <span id="addVar">+ Add Images</span>
+                <label for="image1">Image 1: </label>
+                <input type="file" name="image1" id="image1">
             </p>
-        </div>
-        <p>
-            <input type=submit class="submit" value="Upload Images">
-        </p>
-    </form>
- </div>
- <script src="{{ url_for('static', filename='js/image_upload.js') }}"></script>
+
+            <div>
+                <p>
+                    <span id="addVar">+ Add Images</span>
+                </p>
+            </div>
+            <p>
+                <input type=submit class="submit" value="Upload Images">
+            </p>
+        </form>
+    </div>
+    <script src="{{ url_for('static', filename='js/image_upload.js') }}"></script>
 {% endblock %}

@@ -7,22 +7,25 @@
         {% from "macro.html" import render_checkboxes %}
         <div class="pure-u-1-2">
             {% from "macro.html" import render_field %}
-            <form method=post action="{{ url_for('blog.edit', post_id=post_id) }}" enctype="multipart/form-data" class="pure-form">
+            <form method=post action="{{ url_for('blog.edit', post_id=post_id) }}" enctype="multipart/form-data"
+                  class="pure-form">
                 {% if images %}
                     <p>
                         Your available images:
                     </p>
                     {% for image in image_tags %}
                         {{ render_checkboxes(image_tags[image], class='image') }}
-                        <code><img src="{{image}}" /> <input type=text value="<img src={{ image}}/>"></code>
+                        <code><img src="{{ image }}"/> <input type=text value="<img src={{ image }}/>"></code>
                     {% endfor %}
                 {% endif %}
                 <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
                 {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
+
                 <p>
                     <label for="image1">Image 1: </label>
                     <input type="file" name="image1" id="image1">
                 </p>
+
                 <div>
                     <p>
                         <span id="addVar" class="button-small b-gray">+ Add Images</span>
@@ -44,8 +47,8 @@
             </form>
         </div>
         <div class="pure-u-1-2">
-            <div id=render_title>{{page_content['title']}}</div>
-            <div id=render_body>{{page_content['body_html'] | safe}}</div>
+            <div id=render_title>{{ page_content['title'] }}</div>
+            <div id=render_body>{{ page_content['body_html'] | safe }}</div>
         </div>
         <script src="{{ url_for('static', filename='js/image_upload.js') }}"></script>
     {% else %}

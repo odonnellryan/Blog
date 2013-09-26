@@ -2,12 +2,12 @@ from peewee import IntegerField, CharField, TextField, Model, BlobField
 import config
 
 
-class Blog(Model):
-    class Meta:
+class Blog(Model) :
+    class Meta :
         database = config.DATABASE
 
 
-class Posts(Blog):
+class Posts(Blog) :
     #post_id = IntegerField(primary_key=True)
     title = CharField()
     body = TextField()
@@ -16,7 +16,7 @@ class Posts(Blog):
     images = CharField()
 
 
-class UserData(Blog):
+class UserData(Blog) :
     full_name = CharField()
     footer_text = CharField()
     blog_subtitle = CharField()

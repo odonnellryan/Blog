@@ -1,32 +1,33 @@
 {% extends "index.html" %}
-        {% block body %}
-                <div class="post-content">
-                    {% if posts %}
-                        {% for post in posts %}
-                            <div class="pure-u-1">
+{% block body %}
+    <div class="post-content">
+        {% if posts %}
+            {% for post in posts %}
+                <div class="pure-u-1">
                                 <span class=post-title>
                                     <h1><a id="{{ post.title }}" href="#{{ post.title }}">{{ post.title }}</a></h1>
                                 </span>
                                 <span class="post-link">
-                                    <a id="{{ post.id }}" href="{{ url_for(preview_post_url, post_id=post.id) }}">Link to Post</a>
+                                    <a id="{{ post.id }}" href="{{ url_for(preview_post_url, post_id=post.id) }}">Link
+                                        to Post</a>
                                 </span>
-                            </div>
-                            <div class="pure-u-1 post-body">
+                </div>
+                <div class="pure-u-1 post-body">
                                 <span class=post-body>
                                 {{ render_html(post.body) | safe }}
                                 </span>
-                            </div>
-                            <div class="pure-u-1 post_tags_display">
-                                {% if post.tags %}
-                                    {% for tag in post.tags %}
-                                        <span class="display_tag">
+                </div>
+                <div class="pure-u-1 post_tags_display">
+                    {% if post.tags %}
+                        {% for tag in post.tags %}
+                            <span class="display_tag">
                                             {{ tag }}
                                         </span>
-                                    {% endfor %}
-                                {% endif %}
-                            </div>
-                            <hr>
                         {% endfor %}
                     {% endif %}
                 </div>
-        {%endblock%}
+                <hr>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endblock %}

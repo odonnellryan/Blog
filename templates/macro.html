@@ -1,14 +1,14 @@
 {% macro render_field(field, class='None') %}
     <div class="pure-control-group">
-      {{ field.label(class_=class)|safe }}
-      {{ field(class_=class)|safe }}
-      {% if field.errors %}
-        <ul class=errors>
-        {% for error in field.errors %}
-          <li>{{ error }}</li>
-        {% endfor %}
-        </ul>
-      {% endif %}
+        {{ field.label(class_=class)|safe }}
+        {{ field(class_=class)|safe }}
+        {% if field.errors %}
+            <ul class=errors>
+                {% for error in field.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
     </div>
 {% endmacro %}
 
