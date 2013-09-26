@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, Flask
 from flask_frozen import Freezer
-
+import _mysql_exceptions
 import blog_mods
 import db_mods
 
@@ -13,9 +13,13 @@ tagged_url = 'f_blog.tagged'
 preview_url = 'f_blog.generate_blog_pages'
 preview_post_url = "f_blog.preview_post"
 
-user_data = db_mods.get_user_data()
-if user_data.tags :
-    user_data.tags = user_data.tags.split(',')
+try :
+    user_data = db_mods.get_user_data()
+    if user_data.tags :
+        user_data.tags = user_data.tags.split(',')
+except _mysql_exceptions.OperationalError :
+    user_data = None
+
 f_app.debug = True
 f_app.testing = True
 

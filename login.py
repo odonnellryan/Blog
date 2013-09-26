@@ -1,5 +1,5 @@
 from passlib.apps import custom_app_context as pwd_context
-
+import _mysql_exceptions
 import db_config
 import db_mods
 
@@ -32,7 +32,7 @@ def update_email(get_new_email) :
 def _login(username, password) :
     try :
         _hash = db_mods.get_password(username)
-    except :
+    except _mysql_exceptions.OperationalError:
         return False
 
     if pwd_context.verify(password, _hash) :

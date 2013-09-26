@@ -12,6 +12,7 @@ import config
 import create_flat
 import helper_funcs
 import image_mods
+import _mysql_exceptions
 from login import _login, update_password, update_username
 
 
@@ -23,8 +24,11 @@ preview_post_url = 'blog.preview_post'
 
 @mod.before_request
 def before_request() :
-    g.db = config.DATABASE.connect()
-    g.user_data = db_mods.get_user_data()
+    try:
+        g.db = config.DATABASE.connect()
+        g.user_data = db_mods.get_user_data()
+    except _mysql_exceptions.OperationalError:
+        return render_template('404.html')
     if g.user_data.tags :
         g.user_data.tags = g.user_data.tags.split(',')
     try :
@@ -189,7 +193,8 @@ def login() :
 @decorators.requires_login
 def logout() :
     session.pop('LOGGED_IN')
-    return redirect(url_for('blog.index'))
+    return redirect("/")
+
 
 
 @mod.route('forgot_password/')
@@ -203,7 +208,6 @@ def add_images() :
     """
     add images page
     """
-
     if request.method == 'POST' :
         image_list = image_mods.call_image_tool_posts(request.files)
         post_id = db_mods.add_new_post('Post Title', 'Post Body', [], image_mods.comma_list_of_images(image_list))
@@ -243,7 +247,6 @@ def add() :
     """
     add a new post landing page - lets you choose if you'd like to add images, etc..
     """
-
     return render_template('add.html', user_data=g.user_data, logged_in=g.logged_in, tagged_url=tagged_url)
 
 
@@ -368,20 +371,14 @@ def commit() :
 
 @mod.route('_render_temp_body/', methods=['GET', 'POST'])
 def render_temp_body(username=None, article=None) :
-    try :
-        get_markup = blog_mods.get_html_content(request.args.get('post_body'))
-        return jsonify(result=get_markup)
-    except :
-        return ("")
+    get_markup = blog_mods.get_html_content(request.args.get('post_body'))
+    return jsonify(result=get_markup)
 
 
 @mod.route('_render_temp_title/', methods=['GET', 'POST'])
 def render_temp_title() :
-    try :
-        get_markup = request.args.get('post_title')
-        return jsonify(result=get_markup)
-    except :
-        return ("")
+    get_markup = request.args.get('post_title')
+    return jsonify(result=get_markup)
 
 
 @mod.errorhandler(404)
