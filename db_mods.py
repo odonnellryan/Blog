@@ -11,16 +11,11 @@ def post_tag_identifier(get_tags):
     Gets a dictionary returned by WTForms of the boolean tag values, then returns the tags that are true (selected)
     as a string (to insert into db)
     """
-
     post_tags = []
-
     for tag in get_tags:
         if get_tags[tag].data:
             post_tags.append(tag)
-
-    tags = ",".join(post_tags)
-
-    return tags
+    return post_tags
 
 
 def tag_parser(get_tags):
@@ -93,7 +88,7 @@ def check_user(get_title, get_user):
 
 
 def add_new_post(get_title, get_body, get_tags, get_comma_image_list=None):
-    tags = post_tag_identifier(get_tags)
+    tags = ",".join(post_tag_identifier(get_tags))
     if not tags:
         tags = None
     insert_blog = blog()
@@ -106,7 +101,7 @@ def add_new_post(get_title, get_body, get_tags, get_comma_image_list=None):
 
 
 def edit_post(get_title, get_body, get_post_id, get_tags, get_comma_image_list):
-    tags = post_tag_identifier(get_tags)
+    tags = ",".join(post_tag_identifier(get_tags))
     if not tags:
         tags = None
     if check_if_post_exists(get_post_id):

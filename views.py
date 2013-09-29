@@ -1,9 +1,9 @@
 from __future__ import division
 from collections import OrderedDict
-
 from flask import Blueprint, request, render_template, g, redirect, url_for, session, flash, jsonify
 from wtforms import BooleanField
 import url_settings
+from peewee import DoesNotExist
 import decorators
 import forms
 import blog_mods
@@ -12,8 +12,9 @@ import config
 import create_flat
 import helper_funcs
 import image_mods
+import messages
 import _mysql_exceptions
-from login import _login, update_password, update_username
+from login import user_login, update_password, update_username
 
 
 mod = Blueprint('blog', __name__, url_prefix='/admin/')
@@ -109,7 +110,7 @@ def change_login():
             flash('Your new passwords do not match. Please try again.')
             return redirect(url_for('blog.change_login'))
 
-    if request.method == 'POST' and _login(form.username.data, form.password.data):
+    if request.method == 'POST' and user_login(form.username.data, form.password.data):
         try:
             if form.new_password_1.data:
                 update_password(form.username.data, form.new_password_1.data)
@@ -120,7 +121,7 @@ def change_login():
         except Exception, e:
             flash('There was an error updating your blog information.' + str(e))
             return render_template('change_login.html')
-    elif request.method == 'POST' and not _login(form.username.data, form.password.data):
+    elif request.method == 'POST' and not user_login(form.username.data, form.password.data):
         flash('Your Current Username or Password was incorrect')
 
     return render_template('change_login.html', form=form)
@@ -188,14 +189,19 @@ def login():
 
     form = forms.Login(request.form)
 
-    if request.method == 'POST':
-        if _login(form.username.data, form.password.data):
+    if request.method == 'POST' and form.validate():
+        if user_login(form.username.data, form.password.data):
             session['LOGGED_IN'] = True
             return redirect(url_for('blog.index'))
         else:
             flash('Sorry, you put in the wrong information')
 
     return render_template('login.html', form=form)
+
+
+@mod.route('forgot_password/', methods=['GET', 'POST'])
+def forgot_password():
+    return render_template('forgot_password.html', form=form)
 
 
 @mod.route('logout/', methods=['GET', 'POST'])
@@ -222,7 +228,7 @@ def add_images():
     """
     if request.method == 'POST':
         image_list = image_mods.call_image_tool_posts(request.files)
-        post_id = db_mods.add_new_post('Post Title', 'Post Body', [], image_mods.comma_list_of_images(image_list))
+        post_id = db_mods.add_new_post('Post Title', 'Post Body', [], image_mods.array_to_comma_list(image_list))
         return redirect(url_for('blog.edit', post_id=post_id))
     return render_template('add_images.html')
 
@@ -249,19 +255,18 @@ def edit(post_id=None):
     if post_id:
         class NewPostTags(forms.NewPost):
             pass
-
         post_tags = db_mods.tag_array()
-
         if post_tags:
             for name in post_tags:
                 setattr(NewPostTags, name, BooleanField(name))
-
-        image_array = image_mods.image_array(post_id)
-
+        try:
+            image_array = image_mods.image_array(post_id)
+        except DoesNotExist:
+            flash(messages.ERROR_POST_DOES_NOT_EXIST)
+            return redirect(url_for('blog.edit'))
         if image_array:
             for im_name in image_array:
                 setattr(NewPostTags, im_name, BooleanField(""))
-
         form = NewPostTags(request.form)
         if post_tags:
             tag_values = helper_funcs.return_method_dict(form, post_tags)
@@ -292,9 +297,8 @@ def edit(post_id=None):
         if image_tagged_values:
             image_mods.remove_images(post_id, image_tagged_values)
 
-        uploaded_images = image_mods.comma_list_of_images(image_mods.call_image_tool_posts(request.files))
-        current_images = image_mods.comma_list_of_images(image_mods.image_array(post_id))
-
+        uploaded_images = image_mods.array_to_comma_list(image_mods.call_image_tool_posts(request.files))
+        current_images = image_mods.array_to_comma_list(image_mods.image_array(post_id))
         image_list = []
 
         if uploaded_images:
@@ -302,11 +306,12 @@ def edit(post_id=None):
         if current_images:
             image_list.append(current_images)
 
-        image_list = image_mods.comma_list_of_images(image_list)
+        image_list = image_mods.array_to_comma_list(image_list)
+
         db_mods.edit_post(form.post_title.data, form.post_body.data, post_id, tag_values, image_list)
 
         if 'SavePreview' in request.form:
-            return redirect(url_for(preview_url))
+            return redirect(url_for(url_settings.preview_url))
 
         return redirect(url_for('blog.edit', post_id=post_id))
 
@@ -320,16 +325,15 @@ def edit(post_id=None):
 def delete(post_id=None):
     form = forms.Delete(request.form)
     _page_content = db_mods.get_post_content(post_id)
-
     if not post_id:
         _page_content = db_mods.get_all_titles_and_ids()
-
     if request.method == 'POST' and form.delete.data:
+        current_images = image_mods.image_array(post_id)
+        image_mods.delete_images(current_images, current_images)
         _page_content = db_mods.get_post_content(post_id)
         flash('Post successfully deleted: ' + _page_content['title'])
         db_mods.delete_post(post_id)
         return redirect(url_for('blog.index'))
-
     return render_template('delete.html', page_content=_page_content, post_id=post_id, form=form)
 
 

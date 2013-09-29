@@ -29,7 +29,7 @@ def update_email(get_new_email):
     query.execute()
 
 
-def _login(username, password):
+def user_login(username, password):
     try:
         _hash = db_mods.get_password(username)
     except _mysql_exceptions.OperationalError:
