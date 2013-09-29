@@ -13,60 +13,65 @@ tagged_url = 'f_blog.tagged'
 preview_url = 'f_blog.generate_blog_pages'
 preview_post_url = "f_blog.preview_post"
 
-try :
+try:
     user_data = db_mods.get_user_data()
-    if user_data.tags :
+    if user_data.tags:
         user_data.tags = user_data.tags.split(',')
-except _mysql_exceptions.OperationalError :
+except _mysql_exceptions.OperationalError:
     user_data = None
 
 f_app.debug = True
 f_app.testing = True
 
+@f_mod.context_processor
+def inject_urls():
+    """
+    sets variables that are used in each view. the g-based variables are already passed to the view, so these can
+    be factored out, but i left them like this for now.
+    """
+    return dict(tagged_url=tagged_url, preview_url=preview_url,preview_post_url=preview_post_url, user_data=user_data,
+                render_html=blog_mods.get_html_content)
+
 
 @f_mod.route('/')
 @f_mod.route('<page>/')
-def generate_blog_pages(page=1) :
+def generate_blog_pages(page=1):
     posts = db_mods.paginate_visible_posts(int(page))
     page_count = blog_mods.get_number_of_visible_pages()
     pagination = blog_mods.pagination(page, page_count)
-    if pagination['next_page'] :
+    if pagination['next_page']:
         next_page = pagination['next_page']
-    else :
+    else:
         next_page = 0
-    if pagination['previous_page'] :
+    if pagination['previous_page']:
         previous_page = pagination['previous_page']
-    else :
+    else:
         previous_page = 0
-    return render_template('preview.html', page=page, posts=posts, render_html=blog_mods.get_html_content,
-                           next_page=next_page, previous_page=previous_page, user_data=user_data,
-                           tagged_url=tagged_url, preview_url=preview_url, preview_post_url=preview_post_url)
+    return render_template('preview.html', page=page, posts=posts, next_page=next_page, previous_page=previous_page)
 
 
 @f_mod.route('tagged/<tag>/', methods=['GET', 'POST'])
 @f_mod.route('tagged/', methods=['GET', 'POST'])
-def tagged(tag=None) :
+def tagged(tag=None):
     tags = db_mods.tag_array()
     posts = None
-    if tag :
+    if tag:
         posts = db_mods.search_by_tag(tag)
-    return render_template('tagged.html', tags=tags, render_html=blog_mods.get_html_content, user_data=user_data,
-                           posts=posts, tagged_url=tagged_url, preview_post_url=preview_post_url)
+    return render_template('tagged.html', tags=tags, posts=posts)
 
 
 @f_mod.route('post/<post_id>/', methods=['GET', 'POST'])
-def preview_post(post_id=None) :
+def preview_post(post_id=None):
     page_content = db_mods.get_post_content(post_id)
-    return render_template('preview_post.html', page_content=page_content, user_data=user_data,
-                           tagged_url=tagged_url, render_html=blog_mods.get_html_content)
+    return render_template('preview_post.html', page_content=page_content, user_data=user_data)
 
 
 @f_mod.route('404.html')
-def error_page_not_found() :
+def error_page_not_found():
     user_data = db_mods.get_user_data()
-    if user_data.tags :
+    if user_data.tags:
         user_data.tags = user_data.tags.split(',')
-    return render_template('404.html', user_data=user_data, page_title="404", tagged_url=tagged_url)
+    return render_template('404.html', page_title="404")
 
 
 f_app.register_blueprint(f_mod)

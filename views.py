@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from flask import Blueprint, request, render_template, g, redirect, url_for, session, flash, jsonify
 from wtforms import BooleanField
-
+import url_settings
 import decorators
 import forms
 import blog_mods
@@ -17,55 +17,71 @@ from login import _login, update_password, update_username
 
 
 mod = Blueprint('blog', __name__, url_prefix='/admin/')
-tagged_url = 'blog.tagged'
-preview_url = 'blog.preview'
-preview_post_url = 'blog.preview_post'
 
 
 @mod.before_request
-def before_request() :
+def before_request():
+    """
+    before request
+    gets the user information from the DB to pass to the pages
+    checks if session is set for login
+    """
     try:
         g.db = config.DATABASE.connect()
         g.user_data = db_mods.get_user_data()
     except _mysql_exceptions.OperationalError:
         return render_template('404.html')
-    if g.user_data.tags :
+    if g.user_data.tags:
         g.user_data.tags = g.user_data.tags.split(',')
-    try :
+    try:
         g.logged_in = session['LOGGED_IN']
-    except KeyError :
+    except KeyError:
         g.logged_in = False
 
 
+
+@mod.context_processor
+def inject_urls():
+    """
+    sets variables that are used in each view. the g-based variables are already passed to the view, so these can
+    be factored out, but i left them like this for now.
+    """
+    return dict(tagged_url=url_settings.tagged_url, preview_url=url_settings.preview_url,
+                preview_post_url=url_settings.preview_post_url, logged_in=g.logged_in, user_data=g.user_data,
+                render_html=blog_mods.get_html_content)
+
+
 @mod.teardown_request
-def teardown_request(exception) :
+def teardown_request(exception):
     db = getattr(g, 'db', None)
-    if db is not None :
+    if db is not None:
         db.close()
 
 
 @mod.route('/', methods=['GET', 'POST'])
 @decorators.requires_login
-def index() :
-    """admin page"""
-    post_mods = OrderedDict([('blog.add', 'Add a Post'), ('blog.delete', 'Delete a Post'), ('blog.edit', 'Edit Posts'),
+def index():
+    """admin and landing page"""
+    post_mods = OrderedDict([("blog.add", "Add a Post"), ('blog.delete', 'Delete a Post'), ('blog.edit', 'Edit Posts'),
                              ('blog.preview', 'Preview Main Page'), ('blog.commit', 'Commit your Blog to Flatfile')])
     blog_settings = OrderedDict(
         [('blog.settings', 'Change Blog Settings'), ('blog.change_login', 'Change Login Information')])
-    #blog_statistics = {'blog.statistics' : 'View Blog Statistics'}
-    return render_template('admin.html', render_html=blog_mods.get_html_content, post_mods=post_mods,
-                           blog_settings=blog_settings, user_data=g.user_data, logged_in=g.logged_in
-        , tagged_url=tagged_url)
+
+    #blog_statistics = {'blog.statistics': 'View Blog Statistics'}  #future statistics page
+
+    return render_template('admin.html', post_mods=post_mods, blog_settings=blog_settings)
 
 
 @mod.route('settings/', methods=['GET', 'POST'])
 @decorators.requires_login
-def settings() :
-    """change user defined blog settings from the default"""
+def settings():
+    """
+        change user defined blog settings from the default
+    """
 
     form = forms.BlogSettings(request.form)
 
-    if not request.method == 'POST' :
+    if not request.method == 'POST':
         current_settings = db_mods.get_user_data()
         form.full_name.data = current_settings.full_name
         form.blog_title.data = current_settings.blog_title
@@ -73,239 +89,207 @@ def settings() :
         form.footer_text.data = current_settings.footer_text
         form.tags.data = current_settings.tags
 
-    if request.method == 'POST' and form.validate() :
+    if request.method == 'POST' and form.validate():
         image_mods.image_tool_logo(request.files)
         db_mods.update_all_data(form.blog_title.data, form.blog_subtitle.data, form.full_name.data, form.tags.data,
                                 form.footer_text.data)
         flash('Successfully updated user data')
         return redirect(url_for('blog.preview'))
 
-    return render_template('settings.html', form=form, user_data=g.user_data, page_title="Blog Settings",
-                           logged_in=g.logged_in, tagged_url=tagged_url)
+    return render_template('settings.html', form=form, page_title="Blog Settings")
 
 
 @mod.route('settings/change_login/', methods=['GET', 'POST'])
 @decorators.requires_login
-def change_login() :
+def change_login():
     form = forms.ChangeLogin(request.form)
 
-    if form.new_password_1.data :
-        if not form.new_password_1.data == form.new_password_2.data :
+    if form.new_password_1.data:
+        if not form.new_password_1.data == form.new_password_2.data:
             flash('Your new passwords do not match. Please try again.')
             return redirect(url_for('blog.change_login'))
 
-    if request.method == 'POST' and _login(form.username.data, form.password.data) :
-        try :
-            if form.new_password_1.data :
+    if request.method == 'POST' and _login(form.username.data, form.password.data):
+        try:
+            if form.new_password_1.data:
                 update_password(form.username.data, form.new_password_1.data)
-            if form.new_username.data :
+            if form.new_username.data:
                 update_username(form.new_username.data)
             flash('Updated your login information.')
             return redirect(url_for('blog.preview'))
-        except Exception, e :
+        except Exception, e:
             flash('There was an error updating your blog information.' + str(e))
             return render_template('change_login.html')
-    elif request.method == 'POST' and not _login(form.username.data, form.password.data) :
+    elif request.method == 'POST' and not _login(form.username.data, form.password.data):
         flash('Your Current Username or Password was incorrect')
 
-    return render_template('change_login.html', form=form, user_data=g.user_data,
-                           logged_in=g.logged_in, tagged_url=tagged_url)
+    return render_template('change_login.html', form=form)
 
 
 @mod.route('preview/', methods=['GET', 'POST'])
 @mod.route('preview/<page>/', methods=['GET', 'POST'])
-def preview(page=None) :
+def preview(page=None):
     footer = blog_mods.footer_text()
 
-    if page == 0 :
+    if page == 0:
         page = 1
-    else :
-        try :
+    else:
+        try:
             int(page)
-        except TypeError :
+        except TypeError:
             return redirect(url_for('blog.preview', page=1))
 
-    if int(page) < 0 or not page :
+    if int(page) < 0 or not page:
         return redirect(url_for('blog.preview', page=1))
-    else :
+    else:
         posts = db_mods.paginate_visible_posts(int(page))
 
     page_count = blog_mods.get_number_of_visible_pages()
     pagination = blog_mods.pagination(page, page_count)
 
-    if not pagination['next_page'] == 0 :
+    if not pagination['next_page'] == 0:
         next_page = str(pagination['next_page'])
-    else :
+    else:
         next_page = 0
 
-    if not pagination['previous_page'] == 0 :
+    if not pagination['previous_page'] == 0:
         previous_page = str(pagination['previous_page'])
-    else :
+    else:
         previous_page = 0
 
-    return render_template('preview.html', page=page, posts=posts, render_html=blog_mods.get_html_content,
-                           footer=footer,
-                           next_page=next_page, previous_page=previous_page, user_data=g.user_data,
-                           logged_in=g.logged_in, tagged_url=tagged_url,
-                           preview_url=preview_url, preview_post_url=preview_post_url)
+    return render_template('preview.html', page=page, posts=posts, footer=footer, next_page=next_page,
+                           previous_page=previous_page)
 
 
 @mod.route('preview/tagged/<tag>', methods=['GET', 'POST'])
 @mod.route('preview/tagged/', methods=['GET', 'POST'])
 @decorators.requires_login
-def tagged(tag=None) :
+def tagged(tag=None):
     tags = db_mods.tag_array()
     posts = None
 
-    if tag :
+    if tag:
         posts = db_mods.search_by_tag(tag)
 
-    return render_template('tagged.html', tags=tags, render_html=blog_mods.get_html_content, user_data=g.user_data,
-                           posts=posts, logged_in=g.logged_in, tagged_url=tagged_url, preview_post_url=preview_post_url)
+    return render_template('tagged.html', tags=tags, posts=posts)
 
 
 @mod.route('preview/post/<post_id>/', methods=['GET', 'POST'])
 @decorators.requires_login
-def preview_post(post_id=None) :
+def preview_post(post_id=None):
     page_content = db_mods.get_post_content(post_id)
-    return render_template('preview_post.html', page_content=page_content, user_data=g.user_data,
-                           logged_in=g.logged_in, tagged_url=tagged_url, render_html=blog_mods.get_html_content)
+    return render_template('preview_post.html', page_content=page_content)
 
 
 @mod.route('login/', methods=['GET', 'POST'])
-def login() :
-    if g.logged_in :
+def login():
+    if g.logged_in:
         return redirect(url_for('blog.index'))
 
     form = forms.Login(request.form)
 
-    if request.method == 'POST' :
-        if _login(form.username.data, form.password.data) :
+    if request.method == 'POST':
+        if _login(form.username.data, form.password.data):
             session['LOGGED_IN'] = True
             return redirect(url_for('blog.index'))
-        else :
+        else:
             flash('Sorry, you put in the wrong information')
 
-    return render_template('login.html', form=form, user_data=g.user_data, logged_in=g.logged_in, tagged_url=tagged_url)
+    return render_template('login.html', form=form)
 
 
 @mod.route('logout/', methods=['GET', 'POST'])
 @decorators.requires_login
-def logout() :
+def logout():
     session.pop('LOGGED_IN')
     return redirect("/")
 
 
-
-@mod.route('forgot_password/')
-def forgot_password() :
-    return render_template('forgot_password.html', user_data=g.user_data, logged_in=g.logged_in, tagged_url=tagged_url)
+@mod.route('add/', methods=['GET', 'POST'])
+@decorators.requires_login
+def add():
+    """
+    add a new post landing page - lets you choose if you'd like to add images, etc..
+    """
+    return render_template('add.html')
 
 
 @mod.route('add/images/', methods=['GET', 'POST'])
 @decorators.requires_login
-def add_images() :
+def add_images():
     """
     add images page
     """
-    if request.method == 'POST' :
+    if request.method == 'POST':
         image_list = image_mods.call_image_tool_posts(request.files)
         post_id = db_mods.add_new_post('Post Title', 'Post Body', [], image_mods.comma_list_of_images(image_list))
         return redirect(url_for('blog.edit', post_id=post_id))
-    return render_template('add_images.html', user_data=g.user_data, logged_in=g.logged_in, tagged_url=tagged_url)
+    return render_template('add_images.html')
 
 
 @mod.route('add/post/', methods=['GET', 'POST'])
 @decorators.requires_login
-def add_post() :
-    class NewPostTags(forms.NewPost) :
-        pass
-
-    tag_values = []
-    post_tags = db_mods.tag_array()
-
-    if post_tags :
-        for name in post_tags :
-            setattr(NewPostTags, name, BooleanField(name))
-        form = NewPostTags(request.form)
-        tag_values = helper_funcs.return_method_dict(form, post_tags)
-
-    else :
-        form = NewPostTags(request.form)
-
-    if request.method == 'POST' :
-        db_mods.add_new_post(form.post_title.data, form.post_body.data, tag_values)
-        return redirect(url_for('blog.preview'))
-
-    return render_template('add_post.html', form=form, user_data=g.user_data, tag_values=tag_values,
-                           logged_in=g.logged_in, tagged_url=tagged_url)
-
-
-@mod.route('add/', methods=['GET', 'POST'])
-@decorators.requires_login
-def add() :
-    """
-    add a new post landing page - lets you choose if you'd like to add images, etc..
-    """
-    return render_template('add.html', user_data=g.user_data, logged_in=g.logged_in, tagged_url=tagged_url)
+def add_post():
+    post_id = db_mods.add_new_post('Post Title', 'Post Body', [])
+    return redirect(url_for('blog.edit', post_id=post_id))
 
 
 @mod.route('edit/<post_id>/', methods=['GET', 'POST'])
 @mod.route('edit/', methods=['GET', 'POST'])
 @decorators.requires_login
-def edit(post_id=None) :
+def edit(post_id=None):
     form = []
     page_content = []
     images = []
-    tagged = []
+    current_tags = []
     post_tags = []
     image_tagged_values = []
     tag_values = []
 
-    if post_id :
-        class NewPostTags(forms.NewPost) :
+    if post_id:
+        class NewPostTags(forms.NewPost):
             pass
 
         post_tags = db_mods.tag_array()
 
-        if post_tags :
-            for name in post_tags :
+        if post_tags:
+            for name in post_tags:
                 setattr(NewPostTags, name, BooleanField(name))
 
         image_array = image_mods.image_array(post_id)
 
-        if image_array :
-            for im_name in image_array :
+        if image_array:
+            for im_name in image_array:
                 setattr(NewPostTags, im_name, BooleanField(""))
 
         form = NewPostTags(request.form)
-        if post_tags :
+        if post_tags:
             tag_values = helper_funcs.return_method_dict(form, post_tags)
-        if image_array :
+        if image_array:
             image_tagged_values = helper_funcs.return_method_dict(form, image_array)
 
-    if not post_id :
+    if not post_id:
         page_content = db_mods.get_all_titles_and_ids()
 
-    elif not request.method == 'POST' and post_id :
+    elif not request.method == 'POST' and post_id:
 
         page_content = db_mods.get_post_content(post_id)
         form.post_title.data = page_content['title']
         form.post_body.data = page_content['body']
-        tagged = page_content['tags']
+        current_tags = page_content['tags']
 
         # checks the checkbox if the tag is attached to the post
-        if post_tags and tagged :
-            for tag in tagged :
-                if tag in tag_values :
+        if post_tags and current_tags:
+            for tag in current_tags:
+                if tag in tag_values:
                     tag_values[tag].data = 'y'
 
         images = page_content['images']
         page_content['body_html'] = blog_mods.get_html_content(page_content['body'])
 
-    if request.method == 'POST' :
+    if request.method == 'POST':
 
-        if image_tagged_values :
+        if image_tagged_values:
             image_mods.remove_images(post_id, image_tagged_values)
 
         uploaded_images = image_mods.comma_list_of_images(image_mods.call_image_tool_posts(request.files))
@@ -313,78 +297,77 @@ def edit(post_id=None) :
 
         image_list = []
 
-        if uploaded_images :
+        if uploaded_images:
             image_list.append(uploaded_images)
-        if current_images :
+        if current_images:
             image_list.append(current_images)
 
         image_list = image_mods.comma_list_of_images(image_list)
         db_mods.edit_post(form.post_title.data, form.post_body.data, post_id, tag_values, image_list)
 
-        if 'SavePreview' in request.form :
+        if 'SavePreview' in request.form:
             return redirect(url_for(preview_url))
 
         return redirect(url_for('blog.edit', post_id=post_id))
 
-    return render_template('edit.html', form=form, page_content=page_content, post_id=post_id, user_data=g.user_data,
-                           tag_values=tag_values, logged_in=g.logged_in,
-                           images=images, tagged=tagged, image_tags=image_tagged_values, tagged_url=tagged_url)
+    return render_template('edit.html', form=form, page_content=page_content, post_id=post_id,
+                           tag_values=tag_values, images=images, tagged=current_tags, image_tags=image_tagged_values)
 
 
 @mod.route('delete/<post_id>', methods=['GET', 'POST'])
 @mod.route('delete/', methods=['GET', 'POST'])
 @decorators.requires_login
-def delete(post_id=None) :
+def delete(post_id=None):
     form = forms.Delete(request.form)
     _page_content = db_mods.get_post_content(post_id)
 
-    if not post_id :
+    if not post_id:
         _page_content = db_mods.get_all_titles_and_ids()
 
-    if request.method == 'POST' and form.delete.data :
+    if request.method == 'POST' and form.delete.data:
         _page_content = db_mods.get_post_content(post_id)
         flash('Post successfully deleted: ' + _page_content['title'])
         db_mods.delete_post(post_id)
         return redirect(url_for('blog.index'))
 
-    return render_template('delete.html', page_content=_page_content, post_id=post_id, form=form, user_data=g.user_data,
-                           logged_in=g.logged_in, tagged_url=tagged_url)
+    return render_template('delete.html', page_content=_page_content, post_id=post_id, form=form)
 
 
 @mod.route('commit/', methods=['GET', 'POST'])
 @decorators.requires_login
-def commit() :
+def commit():
     form = forms.Commit(request.form)
 
-    if request.method == 'POST' :
-        if form.commit.data == True :
+    if request.method == 'POST':
+        if form.commit.data == True:
             create_flat.freezer.freeze()
             flash('Successfully Committed Your Files')
             return redirect(url_for('blog.index'))
-        else :
+        else:
             flash("Please click Commit to Flat Files if you wish to Commit your changes.")
             return redirect(url_for('blog.commit'))
 
-    return render_template('commit.html', form=form, user_data=g.user_data, logged_in=g.logged_in,
-                           tagged_url=tagged_url)
+    return render_template('commit.html', form=form)
 
+
+#below are the two views to work with jquery. these views process the text, html, and markup to produce valid html
 
 @mod.route('_render_temp_body/', methods=['GET', 'POST'])
-def render_temp_body(username=None, article=None) :
+def render_temp_body(username=None, article=None):
     get_markup = blog_mods.get_html_content(request.args.get('post_body'))
     return jsonify(result=get_markup)
 
 
 @mod.route('_render_temp_title/', methods=['GET', 'POST'])
-def render_temp_title() :
+def render_temp_title():
     get_markup = request.args.get('post_title')
     return jsonify(result=get_markup)
 
 
 @mod.errorhandler(404)
-def page_not_found(e) :
+def page_not_found(e):
     user_data = db_mods.get_user_data()
-    if user_data.tags :
+    if user_data.tags:
         user_data.tags = user_data.tags.split(',')
-    return render_template('404.html', user_data=user_data, tagged_url=tagged_url), 404
+    return render_template('404.html', user_data=user_data), 404
 

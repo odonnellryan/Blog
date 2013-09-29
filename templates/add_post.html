@@ -13,7 +13,6 @@
         {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
         {% from "macro.html" import render_field %}
         {% from "macro.html" import render_checkboxes %}
-
         <form method=post action="{{ url_for('blog.add_post') }}" class="pure-form">
             <dl>
                 {{ render_field(form.post_title) }}
@@ -24,7 +23,8 @@
                     {% endfor %}
                 </div>
             </dl>
-            <input type=submit class="submit" value="Create Post">
+            <input type=submit class="submit" name="Save" value="Save Changes">
+            <input type=submit class="submit" name="SavePreview" value="Save and Preview">
         </form>
     </div>
     <div class="pure-u-1-2">

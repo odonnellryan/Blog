@@ -8,41 +8,41 @@ import db_mods
 from werkzeug.utils import secure_filename
 
 
-def comma_list_of_images(get_image_array) :
-    if get_image_array :
+def comma_list_of_images(get_image_array):
+    if get_image_array:
         return ",".join(get_image_array)
-    else :
+    else:
         return None
 
 
-def image_array(post_id) :
+def image_array(post_id):
     query = post.get(post.id == post_id)
-    try :
+    try:
         return query.images.split(",")
-    except AttributeError :
+    except AttributeError:
         return False
 
 
-def update_images(post_id, image_list) :
+def update_images(post_id, image_list):
     query = post.update(images=image_list).where(post.id == post_id)
     query.execute()
 
 
-def remove_images(post_id, images_to_remove) :
+def remove_images(post_id, images_to_remove):
     current_images = image_array(post_id)
     remove = db_mods.post_tag_identifier(images_to_remove)
-    if remove :
+    if remove:
         remove = remove.split(",")
-        for image in remove :
+        for image in remove:
             current_images.remove(image)
-            try :
-                os.remove(image.encode()[1 :])
-            except IOError :
+            try:
+                os.remove(image.encode()[1:])
+            except IOError:
                 pass
         return update_images(post_id, current_images)
 
 
-def image_name_tool(get_file, get_path, get_filename) :
+def image_name_tool(get_file, get_path, get_filename):
     """
     Gets a file in a request-post method and renames it if a file with that name exists.
     then returns a string which is that file location
@@ -55,9 +55,9 @@ def image_name_tool(get_file, get_path, get_filename) :
     file_ = get_file
     new_name = filename
 
-    while True :
-        try :
-            with open(file_path) :
+    while True:
+        try:
+            with open(file_path):
                 new_path = filename.split(".")
                 _file_name = new_path[0]
                 extension = new_path[1]
@@ -65,7 +65,7 @@ def image_name_tool(get_file, get_path, get_filename) :
                 image_number += 1
                 file_path = "".join((config.UPLOAD_FOLDER, new_name))
 
-        except IOError :
+        except IOError:
             image_web_path = "".join(('/static/', 'uploads/', new_name))
             file_.save(file_path)
             break
@@ -73,22 +73,22 @@ def image_name_tool(get_file, get_path, get_filename) :
     return image_web_path
 
 
-def call_image_tool_posts(images) :
+def call_image_tool_posts(images):
     image_list = []
-    for image in images :
+    for image in images:
         file_ = images[image]
-        if file_ and helper_funcs.allowed_file(file_.filename) :
+        if file_ and helper_funcs.allowed_file(file_.filename):
             filename = secure_filename(file_.filename).replace(",", "")
             file_path = os.path.join(config.UPLOAD_FOLDER, filename)
             image_list.append(image_name_tool(file_, file_path, filename))
     return image_list
 
 
-def image_tool_logo(images) :
+def image_tool_logo(images):
     image_list = []
-    for image in images :
+    for image in images:
         file_ = images[image]
-        if file_ and helper_funcs.allowed_file(file_.filename) :
+        if file_ and helper_funcs.allowed_file(file_.filename):
             filename = 'logo.jpg'
             file_path = os.path.join('static/imgs/', filename)
             file_.save(file_path)

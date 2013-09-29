@@ -5,7 +5,7 @@
     text-rendering: optimizespeed
 }
 
-.opera-only :-o-prefocus, .pure-g {
+.opera-only:-o-prefocus, .pure-g {
     word-spacing: -.43em
 }
 
@@ -147,7 +147,7 @@
     *word-spacing: -.43em
 }
 
-.opera-only :-o-prefocus, .pure-g-r {
+.opera-only:-o-prefocus, .pure-g-r {
     word-spacing: -.43em
 }
 
