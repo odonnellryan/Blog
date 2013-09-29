@@ -104,12 +104,10 @@ def settings():
 @decorators.requires_login
 def change_login():
     form = forms.ChangeLogin(request.form)
-
     if form.new_password_1.data:
         if not form.new_password_1.data == form.new_password_2.data:
             flash('Your new passwords do not match. Please try again.')
             return redirect(url_for('blog.change_login'))
-
     if request.method == 'POST' and user_login(form.username.data, form.password.data):
         try:
             if form.new_password_1.data:
@@ -123,43 +121,36 @@ def change_login():
             return render_template('change_login.html')
     elif request.method == 'POST' and not user_login(form.username.data, form.password.data):
         flash('Your Current Username or Password was incorrect')
-
     return render_template('change_login.html', form=form)
 
 
 @mod.route('preview/', methods=['GET', 'POST'])
 @mod.route('preview/<page>/', methods=['GET', 'POST'])
 def preview(page=None):
-    footer = blog_mods.footer_text()
-
-    if page == 0:
-        page = 1
-    else:
-        try:
-            int(page)
-        except TypeError:
-            return redirect(url_for('blog.preview', page=1))
-
-    if int(page) < 0 or not page:
+    page_number = blog_mods.fix_page_values(page)
+    if page_number == 0 or not page:
         return redirect(url_for('blog.preview', page=1))
     else:
-        posts = db_mods.paginate_visible_posts(int(page))
+        posts = db_mods.paginate_visible_posts(page_number)
+    previous_page, next_page = blog_mods.get_page_numbers(page)
+    return render_template('preview.html', page=page, posts=posts, next_page=next_page, previous_page=previous_page)
 
-    page_count = blog_mods.get_number_of_visible_pages()
-    pagination = blog_mods.pagination(page, page_count)
 
-    if not pagination['next_page'] == 0:
-        next_page = str(pagination['next_page'])
+@mod.route('posts/', methods=['GET', 'POST'])
+@mod.route('posts/<page>/', methods=['GET', 'POST'])
+@decorators.requires_login
+def posts(page=None):
+    """
+        eventually will display a page that has links next to the post to "unpublish, edit, delete, publish, copy" etc
+        to help with administration
+    """
+    page_number = blog_mods.fix_page_values(page)
+    if page_number == 0 or not page:
+        return redirect(url_for('blog.preview', page=1))
     else:
-        next_page = 0
-
-    if not pagination['previous_page'] == 0:
-        previous_page = str(pagination['previous_page'])
-    else:
-        previous_page = 0
-
-    return render_template('preview.html', page=page, posts=posts, footer=footer, next_page=next_page,
-                           previous_page=previous_page)
+        posts = db_mods.paginate_visible_posts(page_number)
+    previous_page, next_page = blog_mods.get_page_numbers(page)
+    return render_template('preview.html', page=page, posts=posts, next_page=next_page, previous_page=previous_page)
 
 
 @mod.route('preview/tagged/<tag>', methods=['GET', 'POST'])
@@ -168,10 +159,8 @@ def preview(page=None):
 def tagged(tag=None):
     tags = db_mods.tag_array()
     posts = None
-
     if tag:
         posts = db_mods.search_by_tag(tag)
-
     return render_template('tagged.html', tags=tags, posts=posts)
 
 
@@ -186,22 +175,19 @@ def preview_post(post_id=None):
 def login():
     if g.logged_in:
         return redirect(url_for('blog.index'))
-
     form = forms.Login(request.form)
-
     if request.method == 'POST' and form.validate():
         if user_login(form.username.data, form.password.data):
             session['LOGGED_IN'] = True
             return redirect(url_for('blog.index'))
         else:
             flash('Sorry, you put in the wrong information')
-
     return render_template('login.html', form=form)
 
 
 @mod.route('forgot_password/', methods=['GET', 'POST'])
 def forgot_password():
-    return render_template('forgot_password.html', form=form)
+    return render_template('forgot_password.html')
 
 
 @mod.route('logout/', methods=['GET', 'POST'])
@@ -251,7 +237,6 @@ def edit(post_id=None):
     post_tags = []
     image_tagged_values = []
     tag_values = []
-
     if post_id:
         class NewPostTags(forms.NewPost):
             pass
@@ -272,49 +257,35 @@ def edit(post_id=None):
             tag_values = helper_funcs.return_method_dict(form, post_tags)
         if image_array:
             image_tagged_values = helper_funcs.return_method_dict(form, image_array)
-
     if not post_id:
         page_content = db_mods.get_all_titles_and_ids()
-
     elif not request.method == 'POST' and post_id:
-
         page_content = db_mods.get_post_content(post_id)
         form.post_title.data = page_content['title']
         form.post_body.data = page_content['body']
         current_tags = page_content['tags']
-
         # checks the checkbox if the tag is attached to the post
         if post_tags and current_tags:
             for tag in current_tags:
                 if tag in tag_values:
                     tag_values[tag].data = 'y'
-
         images = page_content['images']
         page_content['body_html'] = blog_mods.get_html_content(page_content['body'])
-
     if request.method == 'POST':
-
         if image_tagged_values:
             image_mods.remove_images(post_id, image_tagged_values)
-
         uploaded_images = image_mods.array_to_comma_list(image_mods.call_image_tool_posts(request.files))
         current_images = image_mods.array_to_comma_list(image_mods.image_array(post_id))
         image_list = []
-
         if uploaded_images:
             image_list.append(uploaded_images)
         if current_images:
             image_list.append(current_images)
-
         image_list = image_mods.array_to_comma_list(image_list)
-
         db_mods.edit_post(form.post_title.data, form.post_body.data, post_id, tag_values, image_list)
-
         if 'SavePreview' in request.form:
             return redirect(url_for(url_settings.preview_url))
-
         return redirect(url_for('blog.edit', post_id=post_id))
-
     return render_template('edit.html', form=form, page_content=page_content, post_id=post_id,
                            tag_values=tag_values, images=images, tagged=current_tags, image_tags=image_tagged_values)
 

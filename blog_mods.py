@@ -1,14 +1,10 @@
 import markdown
-from flask import Markup
+from flask import Markup, redirect, url_for
 import db_mods
 
 
 def get_html_content(get_markdown):
     return Markup(markdown.markdown(get_markdown))
-
-
-def footer_text():
-    return "This is your footer-text"
 
 
 def get_number_of_visible_pages():
@@ -21,7 +17,6 @@ def get_number_of_visible_pages():
 
 def pagination(current_page, total_pages):
     """
-
     :param current_page: what page the user is currently on
     :param total_pages: how many pages they are
     :return: pagination, a dict with 'previous_page' and 'next_page' keys
@@ -51,3 +46,27 @@ def pagination(current_page, total_pages):
         previous_page = 0
     pagination['previous_page'] = previous_page
     return pagination
+
+
+def get_page_numbers(page):
+    page_count = get_number_of_visible_pages()
+    get_pagination = pagination(page, page_count)
+    if not get_pagination['next_page'] == 0:
+        next_page = str(get_pagination['next_page'])
+    else:
+        next_page = 0
+    if not get_pagination['previous_page'] == 0:
+        previous_page = str(get_pagination['previous_page'])
+    else:
+        previous_page = 0
+    return previous_page, next_page
+
+
+def fix_page_values(page):
+    try:
+        page_value = int(page)
+        if page_value < 1:
+            page_value = 0
+    except ValueError:
+        page_value = 0
+    return page_value

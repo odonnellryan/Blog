@@ -59,6 +59,9 @@ def get_visible_post_count():
 
 
 def paginate_visible_posts(page):
+    """
+        gets the page of posts
+    """
     paginate_count = 10
     posts_page = blog.select().where(blog.visible == 1).order_by(blog.id.desc()).paginate(page, paginate_count)
     for post in posts_page:
