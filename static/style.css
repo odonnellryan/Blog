@@ -395,7 +395,7 @@ span.tags a:hover {
 }
 
 .main {
-    max-width: 1200px;
+    max-width: auto;
     margin: 0 auto;
     padding-left: 2em;
     padding-top: 2em;

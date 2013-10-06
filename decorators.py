@@ -9,5 +9,4 @@ def requires_login(f):
             flash("Sorry, you must be logged in to do this.")
             return redirect(url_for('blog.login'))
         return f(*args, **kwargs)
-
     return decorated_function

@@ -10,7 +10,7 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script type=text/javascript>$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
     <title>
-        {{ user_data.blog_title }}:: {{ page_title }}
+        {{ user_data.blog_title }} :: {{ page_title }}
     </title>
 </head>
 
@@ -70,7 +70,7 @@
 </div>
 <div class="footer pure-g-r">
     <div class="pure-u-1">
-        {{ user_data.footer_text }}
+        {{ user_data.footer_text | safe }}
     </div>
 </div>
 </body>

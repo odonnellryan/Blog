@@ -10,14 +10,15 @@
                 <span class="position-right"><a href="{{ url_for(preview_url, page=next_page) }}">Next Page</a></span>
             {% endif %}
         </div>
+        {% if not posts %}
+            <div class="pure-u-1">
+                <h2>Sorry, doesn't look like there are any posts!</h2>
+            </div>
+        {% else %}
         {% for post in posts %}
             <div class="pure-u-1">
                             <span class=post-title>
-                                <h1><a id="{{ post.title }}" href="#{{ post.title }}">{{ post.title }}</a></h1>
-                            </span>
-                            <span class="post-link">
-                                <a id="{{ post.id }}" href="{{ url_for(preview_post_url, post_id=post.id) }}">Link to
-                                    Post</a>
+                                <h1><a id="{{ post.title }}" href="{{ url_for(preview_post_url, post_id=post.id) }}">{{ post.title }}</a></h1>
                             </span>
             </div>
             <div class="pure-u-1 post-body">
@@ -45,5 +46,6 @@
                 <span class="position-right"><a href="{{ url_for(preview_url, page=next_page) }}">Next Page</a></span>
             {% endif %}
         </div>
+        {% endif %}
     </div>
 {% endblock %}

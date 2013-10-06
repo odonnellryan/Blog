@@ -48,9 +48,11 @@ def inject_urls():
     sets variables that are used in each view. the g-based variables are already passed to the view, so these can
     be factored out, but i left them like this for now.
     """
+    g.user_data.footer_text = blog_mods.get_html_content(g.user_data.footer_text)
+
     return dict(tagged_url=url_settings.tagged_url, preview_url=url_settings.preview_url,
                 preview_post_url=url_settings.preview_post_url, logged_in=g.logged_in, user_data=g.user_data,
-                render_html=blog_mods.get_html_content)
+                render_html=blog_mods.get_html_content, page_title=g.user_data.blog_subtitle)
 
 
 @mod.teardown_request
@@ -64,7 +66,7 @@ def teardown_request(exception):
 @decorators.requires_login
 def index():
     """admin and landing page"""
-    post_mods = OrderedDict([("blog.add", "Add a Post"), ('blog.delete', 'Delete a Post'), ('blog.edit', 'Edit Posts'),
+    post_mods = OrderedDict([("blog.add_images", "Add a Post"), ('blog.delete', 'Delete a Post'), ('blog.edit', 'Edit Posts'),
                              ('blog.preview', 'Preview Main Page'), ('blog.commit', 'Commit your Blog to Flatfile')])
     blog_settings = OrderedDict(
         [('blog.settings', 'Change Blog Settings'), ('blog.change_login', 'Change Login Information')])
@@ -122,7 +124,7 @@ def change_login():
             return render_template('change_login.html')
     elif request.method == 'POST' and not user_login(form.username.data, form.password.data):
         flash('Your Current Username or Password was incorrect')
-    return render_template('change_login.html', form=form)
+    return render_template('change_login.html', form=form, page_title="Change Login Information")
 
 
 @mod.route('preview/', methods=['GET', 'POST'])
@@ -158,11 +160,12 @@ def posts(page=None):
 @mod.route('preview/tagged/', methods=['GET', 'POST'])
 @decorators.requires_login
 def tagged(tag=None):
-    tags = db_mods.tag_array()
     posts = None
     if tag:
         posts = db_mods.search_by_tag(tag)
-    return render_template('tagged.html', tags=tags, posts=posts)
+        if not posts.count():
+            posts = None
+    return render_template('preview.html', posts=posts, page_title=tag)
 
 
 @mod.route('preview/post/<post_id>/', methods=['GET', 'POST'])
