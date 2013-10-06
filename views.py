@@ -30,15 +30,16 @@ def before_request():
     try:
         g.db = config.DATABASE.connect()
         g.user_data = db_mods.get_user_data()
+        if g.user_data.tags:
+            g.user_data.tags = g.user_data.tags.split(',')
+        try:
+            g.logged_in = session['LOGGED_IN']
+        except KeyError:
+            g.logged_in = False
     except _mysql_exceptions.OperationalError:
-        return render_template('404.html')
-    if g.user_data.tags:
-        g.user_data.tags = g.user_data.tags.split(',')
-    try:
-        g.logged_in = session['LOGGED_IN']
-    except KeyError:
         g.logged_in = False
-
+        g.user_data = False
+        return render_template('404.html', error_type="mysql", error_message=messages.ERROR_DATABASE_CONNECTION)
 
 
 @mod.context_processor
@@ -337,12 +338,4 @@ def render_temp_body(username=None, article=None):
 def render_temp_title():
     get_markup = request.args.get('post_title')
     return jsonify(result=get_markup)
-
-
-@mod.errorhandler(404)
-def page_not_found(e):
-    user_data = db_mods.get_user_data()
-    if user_data.tags:
-        user_data.tags = user_data.tags.split(',')
-    return render_template('404.html', user_data=user_data), 404
 

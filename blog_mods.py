@@ -69,4 +69,6 @@ def fix_page_values(page):
             page_value = 0
     except ValueError:
         page_value = 0
+    except TypeError:
+        page_value = 0
     return page_value
