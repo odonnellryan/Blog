@@ -1,27 +1,36 @@
 {% extends "index.html" %}
 {% block body %}
     <div class="pure-g-r">
-        <div class="pure-u-1">
+        <div class="pure-u-1 center">
             <h1>Admin Panel</h1>
             <hr>
-        </div>
-        <div class="pure-u-1-2">
-            <h3>
-                Post Tools
-            </h3>
-            {% for key in post_mods %}
-                <a href="{{ url_for(key) }}">{{ post_mods[key] }}</a>
-                <br>
-            {% endfor %}
-        </div>
-        <div class="pure-u-1-2">
-            <h3>
-                Blog Settings
-            </h3>
-            {% for key in blog_settings %}
-                <a href="{{ url_for(key) }}">{{ blog_settings[key] }}</a>
-                <br>
-            {% endfor %}
+            <div class="box light-gray">
+                <h3>
+                    Post Tools
+                </h3>
+                {% for key in post_mods %}
+                    <a href="{{ url_for(key) }}">{{ post_mods[key] }}</a>
+                    <br>
+                {% endfor %}
+            </div>
+            <div class="box light-gray">
+                <h3>
+                    Blog Settings
+                </h3>
+                {% for key in blog_settings %}
+                    <a href="{{ url_for(key) }}">{{ blog_settings[key] }}</a>
+                    <br>
+                {% endfor %}
+            </div>
+               <div class="box light-gray">
+                <h3>
+                    View Posts
+                </h3>
+                {% for key in view_posts %}
+                    <a href="{{ url_for(key) }}">{{ view_posts[key] }}</a>
+                    <br>
+                {% endfor %}
+            </div>
         </div>
     </div>
 {% endblock %}

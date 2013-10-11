@@ -1,8 +1,9 @@
 {% extends "index.html" %}
 
 {% block body %}
-    <div class="pure-u-1">
+    <div class="pure-u-1 center">
         {% from "macro.html" import render_checkboxes %}
+        <h2>Highlight the below to commit your blog.</h1>
         <form method=post action="{{ url_for('blog.commit') }}">
             <dl>
                 {{ render_checkboxes(form.commit, class="tag") }}

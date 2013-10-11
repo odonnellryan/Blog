@@ -26,7 +26,7 @@
     <div class="pure-u-1-4"></div>
     <div class="pure-u-1-4"></div>
     <div class="pure-u-1-4"></div>
-    <div class="pure-u-1-4 login-bar">
+    <div class="pure-u-1-4 login-bar center">
         {% if logged_in %}
             <a class="logout" href="{{ url_for('blog.logout') }}">Logout</a>
             <a class="logout" href="{{ url_for('blog.index') }}">Admin</a>
@@ -61,7 +61,7 @@
     </div>
 </div>
 <div class="pure-g-r main">
-    <div class="pure-u-1">
+    <div class="pure-u-1 center">
         {% for message in get_flashed_messages() %}
             <div class=flash>{{ message }}</div>
         {% endfor %}

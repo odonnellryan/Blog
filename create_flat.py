@@ -4,7 +4,6 @@ import _mysql_exceptions
 import blog_mods
 import db_mods
 
-
 f_app = Flask(__name__)
 f_app.config.from_object('config')
 f_mod = Blueprint('f_blog', __name__, url_prefix='/')
@@ -26,27 +25,22 @@ f_app.testing = True
 @f_mod.context_processor
 def inject_urls():
     """
-    sets variables that are used in each view. the g-based variables are already passed to the view, so these can
+    sets variables that are used in each view. the g object is already passed to the view, so these can
     be factored out, but i left them like this for now.
     """
+    user_data.footer_text = blog_mods.get_html_content(user_data.footer_text)
     return dict(tagged_url=tagged_url, preview_url=preview_url,preview_post_url=preview_post_url, user_data=user_data,
-                render_html=blog_mods.get_html_content)
+                render_html=blog_mods.get_html_content, page_title=user_data.blog_subtitle)
 
 
 @f_mod.route('/')
 @f_mod.route('<page>/')
 def generate_blog_pages(page=1):
-    posts = db_mods.paginate_visible_posts(int(page))
-    page_count = blog_mods.get_number_of_visible_pages()
-    pagination = blog_mods.pagination(page, page_count)
-    if pagination['next_page']:
-        next_page = pagination['next_page']
-    else:
-        next_page = 0
-    if pagination['previous_page']:
-        previous_page = pagination['previous_page']
-    else:
-        previous_page = 0
+    page_number = blog_mods.fix_page_values(page)
+    posts = db_mods.paginate_visible_posts(page_number)
+    if not posts.count():
+        posts = None
+    previous_page, next_page = blog_mods.get_page_numbers(page)
     return render_template('preview.html', page=page, posts=posts, next_page=next_page, previous_page=previous_page)
 
 
@@ -57,13 +51,13 @@ def tagged(tag=None):
     posts = None
     if tag:
         posts = db_mods.search_by_tag(tag)
-    return render_template('tagged.html', tags=tags, posts=posts)
+    return render_template('tagged.html', tags=tags, posts=posts, page_title=tag)
 
 
 @f_mod.route('post/<post_id>/', methods=['GET', 'POST'])
 def preview_post(post_id=None):
     page_content = db_mods.get_post_content(post_id)
-    return render_template('preview_post.html', page_content=page_content, user_data=user_data)
+    return render_template('preview_post.html', page_content=page_content, page_title=page_content['title'])
 
 
 @f_mod.route('404.html')

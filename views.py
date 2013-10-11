@@ -45,7 +45,7 @@ def before_request():
 @mod.context_processor
 def inject_urls():
     """
-    sets variables that are used in each view. the g-based variables are already passed to the view, so these can
+    sets variables that are used in each view. the g object is already passed to the view, so these can
     be factored out, but i left them like this for now.
     """
     g.user_data.footer_text = blog_mods.get_html_content(g.user_data.footer_text)
@@ -67,13 +67,16 @@ def teardown_request(exception):
 def index():
     """admin and landing page"""
     post_mods = OrderedDict([("blog.add_images", "Add a Post"), ('blog.delete', 'Delete a Post'), ('blog.edit', 'Edit Posts'),
-                             ('blog.preview', 'Preview Main Page'), ('blog.commit', 'Commit your Blog to Flatfile')])
+                             ('blog.commit', 'Commit your Blog to Flatfile')])
     blog_settings = OrderedDict(
         [('blog.settings', 'Change Blog Settings'), ('blog.change_login', 'Change Login Information')])
 
+    view_posts = OrderedDict([("blog.drafts", "View Drafts"),
+                             ('blog.preview', 'Preview Main Page')])
+
     #blog_statistics = {'blog.statistics': 'View Blog Statistics'}  #future statistics page
 
-    return render_template('admin.html', post_mods=post_mods, blog_settings=blog_settings)
+    return render_template('admin.html', post_mods=post_mods, blog_settings=blog_settings, view_posts=view_posts)
 
 
 @mod.route('settings/', methods=['GET', 'POST'])
@@ -135,6 +138,8 @@ def preview(page=None):
         return redirect(url_for('blog.preview', page=1))
     else:
         posts = db_mods.paginate_visible_posts(page_number)
+    if not posts.count():
+        posts = None
     previous_page, next_page = blog_mods.get_page_numbers(page)
     return render_template('preview.html', page=page, posts=posts, next_page=next_page, previous_page=previous_page)
 
@@ -153,6 +158,20 @@ def posts(page=None):
     else:
         posts = db_mods.paginate_visible_posts(page_number)
     previous_page, next_page = blog_mods.get_page_numbers(page)
+    return render_template('posts.html', page=page, posts=posts, next_page=next_page, previous_page=previous_page)
+
+
+@mod.route('drafts/', methods=['GET', 'POST'])
+@mod.route('drafts/<page>/', methods=['GET', 'POST'])
+def drafts(page=None):
+    page_number = blog_mods.fix_page_values(page)
+    if page_number == 0 or not page:
+        return redirect(url_for('blog.drafts', page=1))
+    else:
+        posts = db_mods.paginate_drafts(page_number)
+    if not posts.count():
+        posts = None
+    previous_page, next_page = blog_mods.get_page_numbers(page)
     return render_template('preview.html', page=page, posts=posts, next_page=next_page, previous_page=previous_page)
 
 
@@ -160,19 +179,22 @@ def posts(page=None):
 @mod.route('preview/tagged/', methods=['GET', 'POST'])
 @decorators.requires_login
 def tagged(tag=None):
-    posts = None
     if tag:
         posts = db_mods.search_by_tag(tag)
         if not posts.count():
             posts = None
-    return render_template('preview.html', posts=posts, page_title=tag)
+        return render_template('preview.html', posts=posts, page_title=tag)
+    return redirect(url_for('blog.preview', page=1))
 
 
 @mod.route('preview/post/<post_id>/', methods=['GET', 'POST'])
 @decorators.requires_login
 def preview_post(post_id=None):
+    if not db_mods.check_if_post_exists(post_id):
+        flash(messages.ERROR_POST_DOES_NOT_EXIST)
+        return redirect(url_for('blog.preview'))
     page_content = db_mods.get_post_content(post_id)
-    return render_template('preview_post.html', page_content=page_content)
+    return render_template('preview_post.html', page_content=page_content, page_title=page_content['title'])
 
 
 @mod.route('login/', methods=['GET', 'POST'])
@@ -186,7 +208,7 @@ def login():
             return redirect(url_for('blog.index'))
         else:
             flash('Sorry, you put in the wrong information')
-    return render_template('login.html', form=form)
+    return render_template('login.html', form=form, page_title="Login")
 
 
 @mod.route('forgot_password/', methods=['GET', 'POST'])
@@ -201,15 +223,6 @@ def logout():
     return redirect("/")
 
 
-@mod.route('add/', methods=['GET', 'POST'])
-@decorators.requires_login
-def add():
-    """
-    add a new post landing page - lets you choose if you'd like to add images, etc..
-    """
-    return render_template('add.html')
-
-
 @mod.route('add/images/', methods=['GET', 'POST'])
 @decorators.requires_login
 def add_images():
@@ -220,7 +233,7 @@ def add_images():
         image_list = image_mods.call_image_tool_posts(request.files)
         post_id = db_mods.add_new_post('Post Title', 'Post Body', [], image_mods.array_to_comma_list(image_list))
         return redirect(url_for('blog.edit', post_id=post_id))
-    return render_template('add_images.html')
+    return render_template('add_images.html', page_title="Add a new post")
 
 
 @mod.route('add/post/', methods=['GET', 'POST'])
@@ -230,6 +243,8 @@ def add_post():
     return redirect(url_for('blog.edit', post_id=post_id))
 
 
+
+#can probably make this a lot clearner..
 @mod.route('edit/<post_id>/', methods=['GET', 'POST'])
 @mod.route('edit/', methods=['GET', 'POST'])
 @decorators.requires_login
@@ -263,8 +278,10 @@ def edit(post_id=None):
             image_tagged_values = helper_funcs.return_method_dict(form, image_array)
     if not post_id:
         page_content = db_mods.get_all_titles_and_ids()
+        page_title = "Edit a Post"
     elif not request.method == 'POST' and post_id:
         page_content = db_mods.get_post_content(post_id)
+        page_title = "Edit Post: " + page_content['title']
         form.post_title.data = page_content['title']
         form.post_body.data = page_content['body']
         current_tags = page_content['tags']
@@ -288,10 +305,13 @@ def edit(post_id=None):
         image_list = image_mods.array_to_comma_list(image_list)
         db_mods.edit_post(form.post_title.data, form.post_body.data, post_id, tag_values, image_list)
         if 'SavePreview' in request.form:
+            return redirect(url_for(url_settings.preview_post_url, post_id=post_id))
+        if 'SavePublish':
             return redirect(url_for(url_settings.preview_url))
         return redirect(url_for('blog.edit', post_id=post_id))
     return render_template('edit.html', form=form, page_content=page_content, post_id=post_id,
-                           tag_values=tag_values, images=images, tagged=current_tags, image_tags=image_tagged_values)
+                           tag_values=tag_values, images=images, tagged=current_tags, image_tags=image_tagged_values,
+                           page_title=page_title)
 
 
 @mod.route('delete/<post_id>', methods=['GET', 'POST'])
@@ -309,7 +329,8 @@ def delete(post_id=None):
         flash('Post successfully deleted: ' + _page_content['title'])
         db_mods.delete_post(post_id)
         return redirect(url_for('blog.index'))
-    return render_template('delete.html', page_content=_page_content, post_id=post_id, form=form)
+    return render_template('delete.html', page_content=_page_content, post_id=post_id, form=form,
+                           page_title="Delete a Post")
 
 
 @mod.route('commit/', methods=['GET', 'POST'])
@@ -326,11 +347,10 @@ def commit():
             flash("Please click Commit to Flat Files if you wish to Commit your changes.")
             return redirect(url_for('blog.commit'))
 
-    return render_template('commit.html', form=form)
-
+    return render_template('commit.html', form=form, page_title="Commit your blog to Flatfile")
 
 #below are the two views to work with jquery. these views process the text, html, and markup to produce valid html
-
+#can probably use one of these rather than two..
 @mod.route('_render_temp_body/', methods=['GET', 'POST'])
 def render_temp_body(username=None, article=None):
     get_markup = blog_mods.get_html_content(request.args.get('post_body'))

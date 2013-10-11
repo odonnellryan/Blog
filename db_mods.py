@@ -60,7 +60,7 @@ def get_visible_post_count():
 
 def paginate_visible_posts(page):
     """
-        gets the page of posts
+        returns visible posts of a specific page
     """
     paginate_count = 10
     posts_page = blog.select().where(blog.visible == 1).order_by(blog.id.desc()).paginate(page, paginate_count)
@@ -69,8 +69,34 @@ def paginate_visible_posts(page):
             post.tags = post.tags.split(",")
     return posts_page
 
+def paginate_all_posts(page):
+    """
+        returns all posts of a specific page
+    """
+    paginate_count = 10
+    posts_page = blog.select().where().order_by(blog.id.desc()).paginate(page, paginate_count)
+    for post in posts_page:
+        if post.tags:
+            post.tags = post.tags.split(",")
+    return posts_page
+
+
+def paginate_drafts(page):
+    """
+        returns all drafts of a specific page
+    """
+    paginate_count = 10
+    posts_page = blog.select().where(blog.visible == 0).order_by(blog.id.desc()).paginate(page, paginate_count)
+    for post in posts_page:
+        if post.tags:
+            post.tags = post.tags.split(",")
+    return posts_page
+
 
 def get_post_content(post_id):
+    """
+        returns a dictionary of the post content based on post_id
+    """
     post = {}
     for _ in blog.select().where(blog.id == post_id):
         post['title'] = _.title
@@ -86,11 +112,10 @@ def get_post_content(post_id):
     return post
 
 
-def check_user(get_title, get_user):
-    return blog.select().where(blog.title == get_title, blog.username == get_user).exists()
-
-
 def add_new_post(get_title, get_body, get_tags, get_comma_image_list=None):
+    """
+    Adds a new post, the default being that the post is not published. (visible=0 is a draft)
+    """
     tags = ",".join(post_tag_identifier(get_tags))
     if not tags:
         tags = None
@@ -98,12 +123,16 @@ def add_new_post(get_title, get_body, get_tags, get_comma_image_list=None):
     insert_blog.title = get_title
     insert_blog.body = get_body
     insert_blog.tags = tags
+    insert_blog.visible = 0
     insert_blog.images = get_comma_image_list
     insert_blog.save()
     return insert_blog.id
 
 
 def edit_post(get_title, get_body, get_post_id, get_tags, get_comma_image_list):
+    """
+        edits the post specified
+    """
     tags = ",".join(post_tag_identifier(get_tags))
     if not tags:
         tags = None
@@ -117,7 +146,10 @@ def edit_post(get_title, get_body, get_post_id, get_tags, get_comma_image_list):
 
 
 def search_by_tag(get_tag):
-    posts = blog.select().where(blog.tags % ('%{0}%'.format(get_tag))).order_by(blog.id.desc())
+    """
+    search visible posts to match specified tags
+    """
+    posts = blog.select().where(blog.tags % ('%{0}%'.format(get_tag)), blog.visible==1).order_by(blog.id.desc())
     for post in posts:
         if post.tags:
             post.tags = post.tags.split(",")
@@ -125,6 +157,9 @@ def search_by_tag(get_tag):
 
 
 def delete_post(get_post_id):
+    """
+        permanently deletes specified post
+    """
     if check_if_post_exists(get_post_id):
         post = blog.get(blog.id == get_post_id)
         return post.delete_instance()
@@ -135,6 +170,9 @@ def delete_post(get_post_id):
 
 
 def update_all_data(get_title=None, get_subtitle=None, get_full_name=None, get_tags=None, get_footer_text=None):
+    """
+        updates all blog data
+    """
     tags = tag_parser(get_tags)
     query = user_d.update(blog_title=get_title, blog_subtitle=get_subtitle, full_name=get_full_name,
                           tags=tags, footer_text=get_footer_text).where(user_d.id == 0)
@@ -157,7 +195,7 @@ def update_name(get_full_name):
 
 
 def update_tags(get_tag_list):
-    _tags = tag_parser(get_tags)
+    _tags = tag_parser(get_tag_list)
     tags = user_d.update(tags=_tags).where(user_d.id == 0)
     tags.execute()
 
@@ -166,9 +204,7 @@ def update_footer_text(get_footer_text):
     footer_text = user_d.update(tags=get_footer_text).where(user_d.id == 0)
     footer_text.execute()
 
-
 #Get user-configured data functions
-
 
 def get_user_data():
     query = user_d.get(user_d.id == 0)

@@ -15,7 +15,9 @@ def array_to_comma_list(get_image_array):
 
 def image_array(post_id):
     query = post.get(post.id == post_id)
-    return query.images.split(",")
+    if not query.images:
+        return None
+    return query.images.split(',')
 
 def update_images(post_id, image_list):
     query = post.update(images=image_list).where(post.id == post_id)
@@ -25,12 +27,15 @@ def delete_images(current_images, images_to_remove):
     """
         gets current images, and images to remove, and returns a list of remaining images
     """
-    for image in images_to_remove:
-        current_images.remove(image)
-        try:
-            os.remove(image.encode()[1:])
-        except IOError or WindowsError:
-            pass
+    try:
+        for image in images_to_remove:
+            current_images.remove(image)
+            try:
+                os.remove(image.encode()[1:])
+            except IOError or WindowsError:
+                pass
+    except TypeError:
+        pass
     return current_images
 
 def remove_images(post_id, images_to_remove):

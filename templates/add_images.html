@@ -1,9 +1,11 @@
 {% extends "index.html" %}
 {% block body %}
-    <div class="pure-u-1-2">
+    <div class="pure-u-1 center">
         <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
         {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
-
+        <h1>
+            Upload any images you wish to use.
+        </h1>
         <form method="post" action="{{ url_for('blog.add_images') }}" enctype=multipart/form-data>
             <p>
                 <label for="image1">Image 1: </label>
@@ -12,11 +14,11 @@
 
             <div>
                 <p>
-                    <span id="addVar">+ Add Images</span>
+                    <span id="addVar" class="b-gray button-small">+ More Images</span>
                 </p>
             </div>
             <p>
-                <input type=submit class="submit" value="Upload Images">
+                <input type=submit class="submit" value="Next">
             </p>
         </form>
     </div>

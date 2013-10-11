@@ -5,22 +5,27 @@
 
     {% if post_id %}
         {% from "macro.html" import render_checkboxes %}
+        {% from "macro.html" import render_field %}
         <div class="pure-u-1-2">
-            {% from "macro.html" import render_field %}
             <form method=post action="{{ url_for('blog.edit', post_id=post_id) }}" enctype="multipart/form-data"
                   class="pure-form">
                 {% if images %}
                     <p>
                         Your available images:
                     </p>
-                    {% for image in image_tags %}
-                        {{ render_checkboxes(image_tags[image], class='image') }}
-                        <code><img src="{{ image }}"/> <input type=text value="<img src={{ image }}/>"></code>
-                    {% endfor %}
+                    <div class="pure-g-r">
+                        {% for image in image_tags %}
+                            <div class="pure-u-1-12">
+                                {{ render_checkboxes(image_tags[image], class='image') }}
+                            </div>
+                            <div class="pure-u-11-12">
+                            <img src="{{ image }}"/> <input type=text value="<img src={{ image }}/>">
+                            </div>
+                        {% endfor %}
+                    </div>
                 {% endif %}
                 <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
                 {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
-
                 <p>
                     <label for="image1">Image 1: </label>
                     <input type="file" name="image1" id="image1">
@@ -28,7 +33,7 @@
 
                 <div>
                     <p>
-                        <span id="addVar" class="button-small b-gray">+ Add Images</span>
+                        <span id="addVar" class="button-small b-gray">+ More Images</span>
                     </p>
                 </div>
                 <dl>
@@ -42,16 +47,19 @@
                         {% endif %}
                     </div>
                 </dl>
-                <input type=submit class="submit" name="Save" value="Save Changes">
-                <input type=submit class="submit" name="SavePreview" value="Save and Preview">
+                <input type=submit class="submit" name="Save" value="Save Draft">
+                <input type=submit class="submit" name="SavePreview" value="Save Draft and Preview">
+                </br>
+                </br>
+                <input type=submit class="submit" name="SavePublish" value="Save and Publish">
             </form>
         </div>
         <div class="pure-u-1-2">
-            <div id=render_title>{{ page_content['title'] }}</div>
-            <div id=render_body>{{ page_content['body_html'] | safe }}</div>
+            <div id="render_title">{{ page_content['title'] }}</div>
+            <div id="render_body">{{ page_content['body_html'] | safe }}</div>
         </div>
         <script src="{{ url_for('static', filename='js/image_upload.js') }}"></script>
-    {% else %}
+    {% elif page_content %}
         <div class="pure-u-1">
             <h2>Please select a post for you to edit.</h2>
             {% for key in page_content %}
@@ -59,6 +67,13 @@
                     <a href="{{ url_for('blog.edit', post_id = key) }}">{{ page_content[key] }}</a>
                 </p>
             {% endfor %}
+        </div>
+    {% else %}
+        <div class="pure-u-1 center">
+            <h2>Sorry, there are currently no posts to edit.</h2>
+            <p>
+                <a href="{{ url_for('blog.add_images') }}">Would you like to add a post?</a>
+            </p>
         </div>
     {% endif %}
 {% endblock %}

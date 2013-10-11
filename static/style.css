@@ -59,6 +59,7 @@ ul, ol {
 
 a {
     text-decoration: none;
+
 }
 
 blockquote {
@@ -136,9 +137,11 @@ hr {
 
 input {
     min-width: 300px;
+    margin-top:1em;
 }
 
 textarea {
+    margin-top:1em;
     width: 300px;
 }
 
@@ -344,6 +347,19 @@ span.tags a:hover {
     box-shadow: 0px 0px 1px #777;
 }
 
+/* additional div styling */
+.post-box {
+    display:inline-block;
+}
+.box {
+    border-radius: 10px;
+    padding:1em;
+    margin:1em;
+    display:inline-block;
+    text-align:left;
+    width:auto;
+}
+
 .center {
     margin: auto;
     text-align: center;
@@ -404,6 +420,7 @@ span.tags a:hover {
 
 .post-content {
     margin: 0 auto;
+    max-width:1200px;
     padding-top: 2em;
 }
 
