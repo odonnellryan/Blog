@@ -102,15 +102,16 @@ def get_post_content(post_id):
         returns a dictionary of the post content based on post_id
     """
     post = {}
-    for _ in blog.select().where(blog.id == post_id):
-        post['title'] = _.title
-        post['body'] = _.body
+    for blog_post in blog.select().where(blog.id == post_id):
+        post['title'] = blog_post.title
+        post['body'] = blog_post.body
+        post['url_title'] = blog_post.url_title
         try:
-            post['images'] = _.images.split(",")
+            post['images'] = blog_post.images.split(",")
         except AttributeError:
             post['images'] = None
         try:
-            post['tags'] = _.tags.split(",")
+            post['tags'] = blog_post.tags.split(",")
         except AttributeError:
             post['tags'] = None
     return post
@@ -146,9 +147,12 @@ def edit_post(get_title, get_body, get_post_id, get_tags, get_comma_image_list, 
         published = 0
     print published
     if check_if_post_exists(get_post_id):
-        post = blog
-        update = post.update(title=get_title, body=get_body, tags=tags, images=get_comma_image_list,
-        visible=published).where(post.id == get_post_id)
+        #some regex to replace some stuff. we don't want weird characters in the url - the url is for SEO
+        import re
+        url_title = get_title.replace(" ", "-")
+        url_title = re.sub('[^0-9a-zA-Z-]+', '', url_title).lower()
+        update = blog.update(title=get_title, body=get_body, tags=tags, images=get_comma_image_list, url_title=url_title,
+        visible=published).where(blog.id == get_post_id)
         update.execute()
         return get_post_id
     return False

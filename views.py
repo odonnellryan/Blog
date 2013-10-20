@@ -41,7 +41,6 @@ def before_request():
         g.user_data = False
         return render_template('404.html', error_type="mysql", error_message=messages.ERROR_DATABASE_CONNECTION)
 
-
 @mod.context_processor
 def inject_urls():
     """
@@ -54,13 +53,11 @@ def inject_urls():
                 preview_post_url=url_settings.preview_post_url, logged_in=g.logged_in, user_data=g.user_data,
                 render_html=blog_mods.get_html_content, page_title=g.user_data.blog_subtitle)
 
-
 @mod.teardown_request
 def teardown_request(exception):
     db = getattr(g, 'db', None)
     if db is not None:
         db.close()
-
 
 @mod.route('/', methods=['GET', 'POST'])
 @decorators.requires_login
@@ -85,7 +82,6 @@ def index():
 
     return render_template('admin.html', post_mods=post_mods, blog_settings=blog_settings, view_posts=view_posts,
                            total_count=total_count, draft_count=draft_count, published_count=published_count)
-
 
 @mod.route('settings/', methods=['GET', 'POST'])
 @decorators.requires_login
@@ -113,7 +109,6 @@ def settings():
 
     return render_template('settings.html', form=form, page_title="Blog Settings")
 
-
 @mod.route('settings/change_login/', methods=['GET', 'POST'])
 @decorators.requires_login
 def change_login():
@@ -137,7 +132,6 @@ def change_login():
         flash('Your Current Username or Password was incorrect')
     return render_template('change_login.html', form=form, page_title="Change Login Information")
 
-
 @mod.route('preview/', methods=['GET', 'POST'])
 @mod.route('preview/<page>/', methods=['GET', 'POST'])
 @decorators.requires_login
@@ -151,7 +145,6 @@ def preview(page=None):
         posts = None
     previous_page, next_page = blog_mods.get_page_numbers(page)
     return render_template('preview.html', page=page, posts=posts, next_page=next_page, previous_page=previous_page)
-
 
 @mod.route('posts/', methods=['GET', 'POST'])
 @mod.route('posts/<page>/', methods=['GET', 'POST'])
@@ -180,7 +173,6 @@ def tagged(tag=None):
             posts = None
         return render_template('preview.html', posts=posts, page_title=tag)
     return redirect(url_for('blog.preview', page=1))
-
 
 @mod.route('preview/post/<post_id>/', methods=['GET', 'POST'])
 @decorators.requires_login

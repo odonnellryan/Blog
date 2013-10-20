@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, Flask
+from flask import Blueprint, render_template, Flask, redirect, url_for
 from flask_frozen import Freezer
 import _mysql_exceptions
 import blog_mods
@@ -54,9 +54,13 @@ def tagged(tag=None):
     return render_template('tagged.html', tags=tags, posts=posts, page_title=tag)
 
 
+@f_mod.route('post/<post_id>/<post_title>/', methods=['GET', 'POST'])
 @f_mod.route('post/<post_id>/', methods=['GET', 'POST'])
-def preview_post(post_id=None):
+def preview_post(post_id=None, post_title=None):
     page_content = db_mods.get_post_content(post_id)
+    if not post_title:
+        title = page_content['url_title']
+        redirect(url_for('f_blog.preview_post', post_id=post_id, post_title=title))
     return render_template('preview_post.html', page_content=page_content, page_title=page_content['title'])
 
 

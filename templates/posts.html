@@ -18,13 +18,13 @@
         {% for post in posts %}
             <div class="pure-u-1">
                 <div class="pure-g-r">
-                    <div class="pure-u-1-2 post-title">
+                    <div class="pure-u-7-8 post-title">
                         <h1><a id="{{ post.title }}" href="{{ url_for(preview_post_url, post_id=post.id) }}">{{ post.title }}</a></h1>
                     </div>
-                    <div class="pure-u-1-2 right post-mod-links">
-                        <a href="{{ url_for('blog.edit', post_id=post.id) }}">Edit  </a>
+                    <div class="pure-u-1-8 right post-mod-links">
+                        <a href="{{ url_for('blog.edit', post_id=post.id) }}">Edit</a>
                         <br>
-                        <a href="{{ url_for('blog.delete', post_id=post.id) }}">Delete  </a>
+                        <a href="{{ url_for('blog.delete', post_id=post.id) }}">Delete</a>
                     </div>
                 </div>
             </div>
