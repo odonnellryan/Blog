@@ -133,17 +133,22 @@ def add_new_post(get_title, get_body, get_tags, get_comma_image_list=None):
     return insert_blog.id
 
 
-def edit_post(get_title, get_body, get_post_id, get_tags, get_comma_image_list):
+def edit_post(get_title, get_body, get_post_id, get_tags, get_comma_image_list, published=None):
     """
         edits the post specified
     """
     tags = ",".join(post_tag_identifier(get_tags))
     if not tags:
         tags = None
+    if published:
+        published = 1
+    else:
+        published = 0
+    print published
     if check_if_post_exists(get_post_id):
         post = blog
-        update = post.update(title=get_title, body=get_body, tags=tags, images=get_comma_image_list
-        ).where(post.id == get_post_id)
+        update = post.update(title=get_title, body=get_body, tags=tags, images=get_comma_image_list,
+        visible=published).where(post.id == get_post_id)
         update.execute()
         return get_post_id
     return False

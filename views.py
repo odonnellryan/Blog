@@ -66,17 +66,25 @@ def teardown_request(exception):
 @decorators.requires_login
 def index():
     """admin and landing page"""
-    post_mods = OrderedDict([("blog.add_images", "Add a Post"), ('blog.delete', 'Delete a Post'), ('blog.edit', 'Edit Posts'),
+
+    total_count = str(db_mods.get_total_post_count())
+    draft_count = str(db_mods.get_draft_post_count())
+    published_count = str(db_mods.get_visible_post_count())
+
+    post_mods = OrderedDict([('blog.add_images', 'Add a Post'),
+                             ('blog.delete', " ".join(("Delete a Post (", published_count, ")"))),
+                             ('blog.edit', 'Edit Posts'),
                              ('blog.commit', 'Commit your Blog to Flatfile')])
     blog_settings = OrderedDict(
         [('blog.settings', 'Change Blog Settings'), ('blog.change_login', 'Change Login Information')])
 
-    view_posts = OrderedDict([("blog.posts", "View Drafts"),
+    view_posts = OrderedDict([('blog.drafts', " ".join(("View Drafts (", draft_count, ")"))),
                              ('blog.preview', 'Preview Main Page')])
 
     #blog_statistics = {'blog.statistics': 'View Blog Statistics'}  #future statistics page
 
-    return render_template('admin.html', post_mods=post_mods, blog_settings=blog_settings, view_posts=view_posts)
+    return render_template('admin.html', post_mods=post_mods, blog_settings=blog_settings, view_posts=view_posts,
+                           total_count=total_count, draft_count=draft_count, published_count=published_count)
 
 
 @mod.route('settings/', methods=['GET', 'POST'])
@@ -132,6 +140,7 @@ def change_login():
 
 @mod.route('preview/', methods=['GET', 'POST'])
 @mod.route('preview/<page>/', methods=['GET', 'POST'])
+@decorators.requires_login
 def preview(page=None):
     page_number = blog_mods.fix_page_values(page)
     if page_number == 0 or not page:
@@ -181,6 +190,23 @@ def preview_post(post_id=None):
         return redirect(url_for('blog.preview'))
     page_content = db_mods.get_post_content(post_id)
     return render_template('preview_post.html', page_content=page_content, page_title=page_content['title'])
+
+@mod.route('drafts/', methods=['GET', 'POST'])
+@mod.route('drafts/<page>/', methods=['GET', 'POST'])
+@decorators.requires_login
+def drafts(page=None):
+    """
+        the view page for the drafts
+    """
+    page_number = blog_mods.fix_page_values(page)
+    if page_number == 0 or not page:
+        return redirect(url_for('blog.drafts', page=1))
+    else:
+        posts = db_mods.paginate_drafts(page_number)
+    if not posts.count():
+        posts = None
+    previous_page, next_page = blog_mods.get_page_numbers(page)
+    return render_template('posts.html', page=page, posts=posts, next_page=next_page, previous_page=previous_page)
 
 
 @mod.route('login/', methods=['GET', 'POST'])
@@ -292,12 +318,11 @@ def edit(post_id=None):
         if current_images:
             image_list.append(current_images)
         image_list = image_mods.array_to_comma_list(image_list)
-        db_mods.edit_post(form.post_title.data, form.post_body.data, post_id, tag_values, image_list)
-        if 'SavePreview' in request.form:
-            return redirect(url_for(url_settings.preview_post_url, post_id=post_id))
-        if 'SavePublish':
+        if 'SavePublish' in request.form:
+            db_mods.edit_post(form.post_title.data, form.post_body.data, post_id, tag_values, image_list, published=True)
             return redirect(url_for(url_settings.preview_url))
-        return redirect(url_for('blog.edit', post_id=post_id))
+        db_mods.edit_post(form.post_title.data, form.post_body.data, post_id, tag_values, image_list)
+        return redirect(url_for('blog.index'))
     return render_template('edit.html', form=form, page_content=page_content, post_id=post_id,
                            tag_values=tag_values, images=images, tagged=current_tags, image_tags=image_tagged_values,
                            page_title=page_title)
@@ -310,7 +335,7 @@ def delete(post_id=None):
     form = forms.Delete(request.form)
     _page_content = db_mods.get_post_content(post_id)
     if not post_id:
-        _page_content = db_mods.get_all_titles_and_ids()
+        _page_content = db_mods.get_all_visible_titles_and_ids()
     if request.method == 'POST' and form.delete.data:
         current_images = image_mods.image_array(post_id)
         image_mods.delete_images(current_images, current_images)

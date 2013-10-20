@@ -78,15 +78,13 @@ h3,
 h4,
 h5,
 h6 {
-    padding-bottom: .25em;
-    padding-top: .25em;
+    margin-bottom: .5em;
     font-weight: bolder;
 }
 
 h1 {
     font-size: 2em;
     color: #000;
-    padding-top: .5em;
 }
 
 h2 {
@@ -352,6 +350,10 @@ span.tags a:hover {
 }
 
 /* additional div styling */
+
+.post-body {
+    padding-top:1em;
+}
 .post-box {
     display:inline-block;
 }
@@ -367,6 +369,10 @@ span.tags a:hover {
 .center {
     margin: auto;
     text-align: center;
+}
+
+.right {
+    text-align: right;
 }
 
 .red {
