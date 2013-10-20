@@ -71,7 +71,7 @@ def index():
     blog_settings = OrderedDict(
         [('blog.settings', 'Change Blog Settings'), ('blog.change_login', 'Change Login Information')])
 
-    view_posts = OrderedDict([("blog.drafts", "View Drafts"),
+    view_posts = OrderedDict([("blog.posts", "View Drafts"),
                              ('blog.preview', 'Preview Main Page')])
 
     #blog_statistics = {'blog.statistics': 'View Blog Statistics'}  #future statistics page
@@ -100,7 +100,7 @@ def settings():
         image_mods.image_tool_logo(request.files)
         db_mods.update_all_data(form.blog_title.data, form.blog_subtitle.data, form.full_name.data, form.tags.data,
                                 form.footer_text.data)
-        flash('Successfully updated user data')
+        flash(messages.MESSAGE_UPDATED_DATA)
         return redirect(url_for('blog.preview'))
 
     return render_template('settings.html', form=form, page_title="Blog Settings")
@@ -112,7 +112,7 @@ def change_login():
     form = forms.ChangeLogin(request.form)
     if form.new_password_1.data:
         if not form.new_password_1.data == form.new_password_2.data:
-            flash('Your new passwords do not match. Please try again.')
+            flash(messages.ERROR_PASSWORDS_DONT_MATCH)
             return redirect(url_for('blog.change_login'))
     if request.method == 'POST' and user_login(form.username.data, form.password.data):
         try:
@@ -120,10 +120,10 @@ def change_login():
                 update_password(form.username.data, form.new_password_1.data)
             if form.new_username.data:
                 update_username(form.new_username.data)
-            flash('Updated your login information.')
+            flash(messages.MESSAGE_UPDATED_DATA)
             return redirect(url_for('blog.preview'))
         except Exception, e:
-            flash('There was an error updating your blog information.' + str(e))
+            flash(messages.ERROR_UPDATING_INFO + messages.ERROR_CODE_RETURN(str(e)))
             return render_template('change_login.html')
     elif request.method == 'POST' and not user_login(form.username.data, form.password.data):
         flash('Your Current Username or Password was incorrect')
@@ -154,25 +154,11 @@ def posts(page=None):
     """
     page_number = blog_mods.fix_page_values(page)
     if page_number == 0 or not page:
-        return redirect(url_for('blog.preview', page=1))
+        return redirect(url_for('blog.posts', page=1))
     else:
         posts = db_mods.paginate_visible_posts(page_number)
     previous_page, next_page = blog_mods.get_page_numbers(page)
     return render_template('posts.html', page=page, posts=posts, next_page=next_page, previous_page=previous_page)
-
-
-@mod.route('drafts/', methods=['GET', 'POST'])
-@mod.route('drafts/<page>/', methods=['GET', 'POST'])
-def drafts(page=None):
-    page_number = blog_mods.fix_page_values(page)
-    if page_number == 0 or not page:
-        return redirect(url_for('blog.drafts', page=1))
-    else:
-        posts = db_mods.paginate_drafts(page_number)
-    if not posts.count():
-        posts = None
-    previous_page, next_page = blog_mods.get_page_numbers(page)
-    return render_template('preview.html', page=page, posts=posts, next_page=next_page, previous_page=previous_page)
 
 
 @mod.route('preview/tagged/<tag>', methods=['GET', 'POST'])
@@ -203,11 +189,14 @@ def login():
         return redirect(url_for('blog.index'))
     form = forms.Login(request.form)
     if request.method == 'POST' and form.validate():
-        if user_login(form.username.data, form.password.data):
-            session['LOGGED_IN'] = True
-            return redirect(url_for('blog.index'))
-        else:
-            flash('Sorry, you put in the wrong information')
+        try:
+            if user_login(form.username.data, form.password.data):
+                session['LOGGED_IN'] = True
+                return redirect(url_for('blog.index'))
+            else:
+                flash(messages.ERROR_USER_INFO_INCORRECT)
+        except DoesNotExist:
+            flash(messages.ERROR_USER_INFO_INCORRECT)
     return render_template('login.html', form=form, page_title="Login")
 
 
@@ -277,7 +266,7 @@ def edit(post_id=None):
         if image_array:
             image_tagged_values = helper_funcs.return_method_dict(form, image_array)
     if not post_id:
-        page_content = db_mods.get_all_titles_and_ids()
+        page_content = db_mods.get_all_visible_titles_and_ids()
         page_title = "Edit a Post"
     elif not request.method == 'POST' and post_id:
         page_content = db_mods.get_post_content(post_id)
@@ -326,9 +315,11 @@ def delete(post_id=None):
         current_images = image_mods.image_array(post_id)
         image_mods.delete_images(current_images, current_images)
         _page_content = db_mods.get_post_content(post_id)
-        flash('Post successfully deleted: ' + _page_content['title'])
+        flash(messages.MESSAGE_POST_DELETED(_page_content['title']))
         db_mods.delete_post(post_id)
         return redirect(url_for('blog.index'))
+    if request.method == 'POST' and not form.delete.data:
+        flash(messages.ERROR_ACTION_NOT_CONFIRMED)
     return render_template('delete.html', page_content=_page_content, post_id=post_id, form=form,
                            page_title="Delete a Post")
 

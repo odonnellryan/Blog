@@ -1,6 +1,7 @@
 import sys
 import os
 import db_mods
+import _mysql_exceptions
 import views, url_settings, messages
 from flask import render_template, Flask, g
 sys.path.append(os.getcwd())
@@ -20,7 +21,11 @@ def inject_urls():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    user_data = db_mods.get_user_data()
+    try:
+        user_data = db_mods.get_user_data()
+    except _mysql_exceptions.OperationalError:
+        user_data = None
+        return render_template('404.html', user_data=user_data, error_message=messages.ERROR_DATABASE_CONNECTION)
     if user_data.tags:
         user_data.tags = user_data.tags.split(',')
     return render_template('404.html', user_data=user_data, error_message=messages.ERROR_404), 404

@@ -41,22 +41,26 @@ def get_all_titles_and_ids():
     posts = OrderedDict([post.id, post.title] for post in blog.select().order_by(blog.id.desc()))
     return posts
 
+def get_all_visible_titles_and_ids():
+    posts = OrderedDict([post.id, post.title] for post in blog.select().where(blog.visible==1).order_by(blog.id.desc()))
+    return posts
 
 def get_latest_ten_posts():
     blog_posts = blog.select()
     posts = [post for post in blog_posts.order_by(blog.id.desc()).limit(10)]
     return posts
 
-
 def get_total_post_count():
     posts = blog.select().count()
     return posts
-
 
 def get_visible_post_count():
     posts = blog.select().where(blog.visible == 1).count()
     return posts
 
+def get_draft_post_count():
+    posts = blog.select().where(blog.visible == 0).count()
+    return posts
 
 def paginate_visible_posts(page):
     """
@@ -179,32 +183,8 @@ def update_all_data(get_title=None, get_subtitle=None, get_full_name=None, get_t
     query.execute()
 
 
-def update_title(get_title):
-    title = user_d.update(blog_title=get_title).where(user_d.id == 0)
-    title.execute()
-
-
-def update_subtitle(get_subtitle):
-    subtitle = user_d.update(blog_subtitle=get_subtitle).where(user_d.id == 0)
-    subtitle.execute()
-
-
-def update_name(get_full_name):
-    name = user_d.update(full_name=get_full_name).where(user_d.id == 0)
-    name.execute()
-
-
-def update_tags(get_tag_list):
-    _tags = tag_parser(get_tag_list)
-    tags = user_d.update(tags=_tags).where(user_d.id == 0)
-    tags.execute()
-
-
-def update_footer_text(get_footer_text):
-    footer_text = user_d.update(tags=get_footer_text).where(user_d.id == 0)
-    footer_text.execute()
-
 #Get user-configured data functions
+
 
 def get_user_data():
     query = user_d.get(user_d.id == 0)

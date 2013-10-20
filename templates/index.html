@@ -63,7 +63,10 @@
 <div class="pure-g-r main">
     <div class="pure-u-1 center">
         {% for message in get_flashed_messages() %}
-            <div class=flash>{{ message }}</div>
+            <div>
+                <p class="underline">{{ message | safe}}</p>
+                <p></p>
+            </div>
         {% endfor %}
     </div>
     {% block body %}{% endblock %}

@@ -15,19 +15,19 @@
             </div>
             <div class="box light-gray">
                 <h3>
-                    Blog Settings
-                </h3>
-                {% for key in blog_settings %}
-                    <a href="{{ url_for(key) }}">{{ blog_settings[key] }}</a>
-                    <br>
-                {% endfor %}
-            </div>
-               <div class="box light-gray">
-                <h3>
                     View Posts
                 </h3>
                 {% for key in view_posts %}
                     <a href="{{ url_for(key) }}">{{ view_posts[key] }}</a>
+                    <br>
+                {% endfor %}
+            </div>
+            <div class="box light-gray">
+                <h3>
+                    Blog Settings
+                </h3>
+                {% for key in blog_settings %}
+                    <a href="{{ url_for(key) }}">{{ blog_settings[key] }}</a>
                     <br>
                 {% endfor %}
             </div>

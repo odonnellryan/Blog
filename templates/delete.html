@@ -10,10 +10,12 @@
             <form method=post action="{{ url_for('blog.delete', post_id=post_id) }}"
                   class="pure-form pure-form-aligned">
                 Are you sure you want to delete the post: {{ page_content['title'] }}
-                <dl>
-                    {{ render_checkboxes(form.delete, class='tag') }}
-                </dl>
-                <p><input type="submit" class="button b-orange" value="Delete Post">
+                <p>
+                    <dl>
+                        {{ render_checkboxes(form.delete, class='tag') }}
+                    </dl>
+                </p>
+                <input type="submit" class="button b-orange" value="Delete Post">
             </form>
         </div>
     {% elif not page_content %}
@@ -21,8 +23,8 @@
             <h2>Sorry, doesn't look like there are any posts to delete!</h2>
         </div>
     {% else %}
-        <div class="pure-u-1">
-            <h1>Please select the post you wish to delete.</h1>
+        <div class="pure-u-1 center">
+            <h2>Please select the post you wish to delete.</h2>
             {% for key in page_content %}
                 <p>
                     <a href="{{ url_for('blog.delete', post_id = key) }}">{{ page_content[key] }}</a>

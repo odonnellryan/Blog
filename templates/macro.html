@@ -3,11 +3,13 @@
         {{ field.label(class_=class)|safe }}
         {{ field(class_=class)|safe }}
         {% if field.errors %}
-            <ul class=errors>
+            <p class="errors">
                 {% for error in field.errors %}
-                    <li>{{ error }}</li>
+                    <p>
+                        {{ error }}
+                    </p>
                 {% endfor %}
-            </ul>
+            </p>
         {% endif %}
     </div>
 {% endmacro %}
