@@ -47,7 +47,8 @@ def inject_urls():
     sets variables that are used in each view. the g object is already passed to the view, so these can
     be factored out, but i left them like this for now.
     """
-    g.user_data.footer_text = blog_mods.get_html_content(g.user_data.footer_text)
+    if g.user_data.footer_text:
+        g.user_data.footer_text = blog_mods.get_html_content(g.user_data.footer_text)
 
     return dict(tagged_url=url_settings.tagged_url, preview_url=url_settings.preview_url,
                 preview_post_url=url_settings.preview_post_url, logged_in=g.logged_in, user_data=g.user_data,
@@ -364,14 +365,14 @@ def commit():
 #can probably use one of these rather than two..
 @mod.route('_render_temp_body/', methods=['GET', 'POST'])
 def render_temp_body(username=None, article=None):
-    if request.method == 'GET':
+    if request.args.get('post_body'):
         get_markup = blog_mods.get_html_content(request.args.get('post_body'))
         return jsonify(result=get_markup)
 
 
 @mod.route('_render_temp_title/', methods=['GET', 'POST'])
 def render_temp_title():
-    if request.method == 'GET':
+    if request.args.get('post_title'):
         get_markup = request.args.get('post_title')
         return jsonify(result=get_markup)
 
