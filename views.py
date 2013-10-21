@@ -41,6 +41,9 @@ def before_request():
         #check if it's an auth error (in this case most likely db info isn't set correctly)
         if 1045 in e.args:
             return render_template('404.html', error_type="MySQL", error_message=messages.ERROR_DATABASE_CONFIGURATION)
+        #this is because the database isn't configured correctly, eg tables etc..
+        if 1054 in e.args:
+            db_mods.create_tables()
         #check if there is any database configuration stuff. if there is not, redirect to the install page
         if not config.DATABASE:
             return render_template('install.html', error_type="MySQL", error_message=messages.ERROR_DATABASE_CONNECTION)

@@ -4,6 +4,11 @@ import db_config
 blog = db_config.Posts
 user_d = db_config.UserData
 
+
+def create_tables():
+    blog.create()
+    user_d.create()
+
 # Helper Function
 
 def post_tag_identifier(get_tags):
