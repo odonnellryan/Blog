@@ -8,9 +8,16 @@ from flask import url_for
 """
 
 ERROR_POST_DOES_NOT_EXIST = "Sorry, but that post does not seem to exist."
-ERROR_DATABASE_CONNECTION = "Sorry, there seems to be a problem with the database connection."
+ERROR_DATABASE_CONNECTION = "Sorry, there seems to be a problem with the database connection. This is most often" \
+                            " because of a connection error, such as the database server not running."
+ERROR_DATABASE_CONFIGURATION = "Sorry, we could not establish a database connection. There may be a problem with" \
+                               " the user credentials and database information in your config file."
 ERROR_404 = "Sorry, but the page you're looking for can not be found."
 
+
+# general status messages
+
+MESSAGE_NEW_INSTALL = "Seems as if this is a new install. To continue, please "
 
 ##### user related messages (account, posting errors, etc..)
 

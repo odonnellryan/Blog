@@ -26,3 +26,9 @@ class UserData(Blog):
     username = CharField()
     forgot_password = BlobField()
     email = CharField()
+
+
+def create_tables():
+    Blog.create()
+    Posts.create()
+    UserData.create()
