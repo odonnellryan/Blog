@@ -174,13 +174,16 @@ def tagged(tag=None):
         return render_template('preview.html', posts=posts, page_title=tag)
     return redirect(url_for('blog.preview', page=1))
 
+@mod.route('preview/post/<post_id>/<post_title>/', methods=['GET', 'POST'])
 @mod.route('preview/post/<post_id>/', methods=['GET', 'POST'])
 @decorators.requires_login
-def preview_post(post_id=None):
+def preview_post(post_id=None, post_title=None):
     if not db_mods.check_if_post_exists(post_id):
         flash(messages.ERROR_POST_DOES_NOT_EXIST)
         return redirect(url_for('blog.preview'))
     page_content = db_mods.get_post_content(post_id)
+    if not post_title:
+        redirect(url_for('blog.preview_post', post_id=post_id, post_title=page_content['url_title']))
     return render_template('preview_post.html', page_content=page_content, page_title=page_content['title'])
 
 @mod.route('drafts/', methods=['GET', 'POST'])
@@ -361,12 +364,14 @@ def commit():
 #can probably use one of these rather than two..
 @mod.route('_render_temp_body/', methods=['GET', 'POST'])
 def render_temp_body(username=None, article=None):
-    get_markup = blog_mods.get_html_content(request.args.get('post_body'))
-    return jsonify(result=get_markup)
+    if request.method == 'GET':
+        get_markup = blog_mods.get_html_content(request.args.get('post_body'))
+        return jsonify(result=get_markup)
 
 
 @mod.route('_render_temp_title/', methods=['GET', 'POST'])
 def render_temp_title():
-    get_markup = request.args.get('post_title')
-    return jsonify(result=get_markup)
+    if request.method == 'GET':
+        get_markup = request.args.get('post_title')
+        return jsonify(result=get_markup)
 
