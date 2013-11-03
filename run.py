@@ -1,15 +1,17 @@
 import sys
 import os
 import db_mods
-import _mysql_exceptions
+import exception_handling
 import views, url_settings, messages
-from flask import render_template, Flask, g
+import config_views
+from flask import render_template, Flask, g, redirect, url_for
 sys.path.append(os.getcwd())
 
 sys.path.append("/usr/share/nginx/www/eztech/public_html")
 app = Flask(__name__)
 app.config.from_object('config')
 app.register_blueprint(views.mod)
+app.register_blueprint(config_views.mod)
 
 @app.context_processor
 def inject_urls():
@@ -23,10 +25,13 @@ def inject_urls():
 def page_not_found(e):
     try:
         user_data = db_mods.get_user_data()
-    except _mysql_exceptions.OperationalError:
+    except exception_handling.database_exceptions, e:
+        error, redirect_page = exception_handling.database_exception_handler(e)
         user_data = None
-        return render_template('404.html', user_data=user_data, error_message=messages.ERROR_DATABASE_CONNECTION)
-    if user_data.tags:
+        if redirect_page:
+            return redirect(url_for(redirect_page))
+        return render_template(('404.html'), error_type="MySQL", error_message=error, user_data=user_data)
+    if user_data:
         user_data.tags = user_data.tags.split(',')
     return render_template('404.html', user_data=user_data, error_message=messages.ERROR_404), 404
 

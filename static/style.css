@@ -421,7 +421,7 @@ span.tags a:hover {
 }
 
 .main {
-    max-width: auto;
+    max-width: 900px;
     margin: 0 auto;
     padding-left: 2em;
     padding-top: 2em;
@@ -430,7 +430,6 @@ span.tags a:hover {
 
 .post-content {
     margin: 0 auto;
-    max-width:800px;
     padding-top: 2em;
 }
 

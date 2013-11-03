@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, Flask, redirect, url_for
 from flask_frozen import Freezer
-import _mysql_exceptions
 import blog_mods
 import db_mods
+import exception_handling
 
 f_app = Flask(__name__)
 f_app.config.from_object('config')
@@ -16,7 +16,7 @@ try:
     user_data = db_mods.get_user_data()
     if user_data.tags:
         user_data.tags = user_data.tags.split(',')
-except _mysql_exceptions.OperationalError:
+except exception_handling.database_exceptions:
     user_data = None
 
 f_app.debug = True

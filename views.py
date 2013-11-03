@@ -2,20 +2,20 @@ from __future__ import division
 from collections import OrderedDict
 from flask import Blueprint, request, render_template, g, redirect, url_for, session, flash, jsonify
 from wtforms import BooleanField
-from login import user_login, update_password, update_username
+from login import user_login, update_login_details
 from peewee import DoesNotExist
+import config
 import url_settings
 import decorators
 import forms
 import blog_mods
 import db_mods
-import config
+import db_structure
 import create_flat
 import helper_funcs
 import image_mods
 import messages
-import _mysql_exceptions
-
+import exception_handling
 
 mod = Blueprint('blog', __name__, url_prefix='/admin/')
 
@@ -27,7 +27,7 @@ def before_request():
         checks if session is set for login
     """
     try:
-        g.db = config.DATABASE.connect()
+        g.db = db_structure.database().connect()
         g.user_data = db_mods.get_user_data()
         if g.user_data.tags:
             g.user_data.tags = g.user_data.tags.split(',')
@@ -35,19 +35,17 @@ def before_request():
             g.logged_in = session['LOGGED_IN']
         except KeyError:
             g.logged_in = False
-    except _mysql_exceptions.OperationalError, e:
+
+    except exception_handling.database_exceptions, e:
+        error, redirect_page = exception_handling.database_exception_handler(e)
         g.logged_in = False
         g.user_data = False
-        #check if it's an auth error (in this case most likely db info isn't set correctly)
-        if 1045 in e.args:
-            return render_template('404.html', error_type="MySQL", error_message=messages.ERROR_DATABASE_CONFIGURATION)
-        #this is because the database isn't configured correctly, eg tables etc..
-        if 1054 in e.args:
-            db_mods.create_tables()
-        #check if there is any database configuration stuff. if there is not, redirect to the install page
-        if not config.DATABASE:
-            return render_template('install.html', error_type="MySQL", error_message=messages.ERROR_DATABASE_CONNECTION)
-        return render_template('404.html', error_type="MySQL", error_message=messages.ERROR_DATABASE_CONNECTION)
+        if redirect_page:
+            return redirect(url_for(redirect_page))
+        return render_template(('404.html'), error_type="MySQL", error_message=error)
+
+    if not config.DATABASE_TYPE:
+        return render_template('install.html', error_type="MySQL", error_message=messages.ERROR_DATABASE_CONNECTION)
 
 @mod.context_processor
 def inject_urls():
@@ -140,17 +138,15 @@ def change_login():
         if not form.new_password_1.data == form.new_password_2.data:
             flash(messages.ERROR_PASSWORDS_DONT_MATCH)
             return redirect(url_for('blog.change_login'))
-    if request.method == 'POST' and user_login(form.username.data, form.password.data):
-        try:
-            if form.new_password_1.data:
-                update_password(form.username.data, form.new_password_1.data)
-            if form.new_username.data:
-                update_username(form.new_username.data)
+    if request.method == 'POST' and user_login(form.username.data, form.password.data) and form.validate():
+        if update_login_details(form.username, form.password,form.new_username,
+                                form.new_password_1, form.new_password_2):
             flash(messages.MESSAGE_UPDATED_DATA)
             return redirect(url_for('blog.preview'))
-        except Exception, e:
-            flash(messages.ERROR_UPDATING_INFO + messages.ERROR_CODE_RETURN(str(e)))
+        else:
+            flash(messages.ERROR_UPDATING_INFO)
             return render_template('change_login.html')
+
     elif request.method == 'POST' and not user_login(form.username.data, form.password.data):
         flash('Your Current Username or Password was incorrect')
     return render_template('change_login.html', form=form, page_title="Change Login Information")
@@ -381,6 +377,7 @@ def render_temp_body(username=None, article=None):
         get_markup = blog_mods.get_html_content(request.args.get('post_body'))
         return jsonify(result=get_markup)
 
+#this one doesn't actually do anything, but it might eventually.
 @mod.route('_render_temp_title/', methods=['GET', 'POST'])
 def render_temp_title():
     if request.args.get('post_title'):

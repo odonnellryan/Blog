@@ -1,5 +1,3 @@
-from flask import url_for
-
 """
 
     Used to define any messages or user communication for the site.
@@ -8,16 +6,23 @@ from flask import url_for
 """
 
 ERROR_POST_DOES_NOT_EXIST = "Sorry, but that post does not seem to exist."
-ERROR_DATABASE_CONNECTION = "Sorry, there seems to be a problem with the database connection. This is most often" \
-                            " because of a connection error, such as the database server not running."
+ERROR_DATABASE_CONNECTION = "<p>Sorry, there seems to be a problem with the database connection. This is most often" \
+                            " because of a connection error, such as the database server not running or not being" \
+                            " configured properly. " \
+                            "</p><p>" \
+                            "If you have confirmed that your database is running, please navigate to the " \
+                            "</p><p>" \
+                            "This blog was created using MariaDB (a replacement for MySQL), however, the included" \
+                            " PeeWee ORM supports Sqlite, MySQL and Postgresql. It is suggested that one reads" \
+                            " up on the differences between these databases before selecting one. However, MariaDB or" \
+                            " MySQL have proven to be a safe choice for this type of application."
 ERROR_DATABASE_CONFIGURATION = "Sorry, we could not establish a database connection. There may be a problem with" \
                                " the user credentials and database information in your config file."
 ERROR_404 = "Sorry, but the page you're looking for can not be found."
 
-
 # general status messages
 
-MESSAGE_NEW_INSTALL = "Seems as if this is a new install. To continue, please "
+MESSAGE_NEW_INSTALL = "Seems as if this is a new install. To continue..."
 
 ##### user related messages (account, posting errors, etc..)
 

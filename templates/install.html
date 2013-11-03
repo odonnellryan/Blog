@@ -66,7 +66,41 @@
     </div>
     <div class="pure-u-1">
         <div class="pure-u-1">
-            {{ error_message }}
+            {% from "macro.html" import render_field %}
+            {% if 'improper_tables' in error_message %}
+                <h1>Welcome!</h1>
+                <p>
+                    Welcome to your blog! Please enter some configuration details below to get started.
+                    Fields marked with an asterisk(*) are required.
+                </p>
+
+                <form method=post action="{{ url_for('config.db_tables') }}" enctype="multipart/form-data"
+              class="pure-form pure-form-aligned center">
+                    <dl>
+                        {{ render_field(user_data_form.blog_title) }}
+                        {{ render_field(user_data_form.blog_subtitle) }}
+                        {{ render_field(user_data_form.full_name) }}
+                        {{ render_field(user_data_form.tags) }}
+                        {{ render_field(user_data_form.footer_text) }}
+                        {{ render_field(user_data_form.logo_image) }}
+                        {{ render_field(login_form.username) }}
+                        {{ render_field(login_form.password) }}
+                        {{ render_field(login_form.confirm_password) }}
+                    </dl>
+                    <p>
+                        <input type="submit" class="submit" value="Save Blog Data and Create Tables">
+                    </p>
+                    <p>
+                        If you're seeing this
+                        and you have already installed the blog, there is an error with your tables and the blog files.
+                        This page is only displayed for the first database table setup. If you've just moved hosts, this
+                        step is not needed. Just restore your database - just as you had it before - and after you put
+                        in the database username and password into the blog config file you will be up and running.
+                    </p>
+                </form>
+            {% else %}
+                <p></p>
+            {% endif %}
             <br>
             <br>
         </div>

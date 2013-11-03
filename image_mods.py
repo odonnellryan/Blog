@@ -1,5 +1,5 @@
-import db_config
-post = db_config.Posts
+import db_structure
+post = db_structure.Posts
 import helper_funcs
 import os
 import config

@@ -1,16 +1,14 @@
 from collections import OrderedDict
-import db_config
+import db_structure
 
-blog = db_config.Posts
-user_d = db_config.UserData
-
+blog = db_structure.Posts
+user_d = db_structure.UserData
 
 def create_tables():
     blog.create()
     user_d.create()
 
 # Helper Function
-
 def post_tag_identifier(get_tags):
     """
     Gets a dictionary returned by WTForms of the boolean tag values, then returns the tags that are true (selected)
@@ -21,7 +19,6 @@ def post_tag_identifier(get_tags):
         if get_tags[tag].data:
             post_tags.append(tag)
     return post_tags
-
 
 def tag_parser(get_tags):
     """
@@ -34,13 +31,10 @@ def tag_parser(get_tags):
     else:
         return None
 
-
 # get post information
-
 
 def check_if_post_exists(get_post_id):
     return blog.select().where(blog.id == get_post_id).exists()
-
 
 def get_all_titles_and_ids():
     posts = OrderedDict([post.id, post.title] for post in blog.select().order_by(blog.id.desc()))
@@ -89,7 +83,6 @@ def paginate_all_posts(page):
             post.tags = post.tags.split(",")
     return posts_page
 
-
 def paginate_drafts(page):
     """
         returns all drafts of a specific page
@@ -100,7 +93,6 @@ def paginate_drafts(page):
         if post.tags:
             post.tags = post.tags.split(",")
     return posts_page
-
 
 def get_post_content(post_id):
     """
@@ -121,7 +113,6 @@ def get_post_content(post_id):
             post['tags'] = None
     return post
 
-
 def add_new_post(get_title, get_body, get_tags, get_comma_image_list=None):
     """
     Adds a new post, the default being that the post is not published. (visible=0 is a draft)
@@ -138,7 +129,6 @@ def add_new_post(get_title, get_body, get_tags, get_comma_image_list=None):
     insert_blog.save()
     return insert_blog.id
 
-
 def edit_post(get_title, get_body, get_post_id, get_tags, get_comma_image_list, published=None):
     """
         edits the post specified
@@ -150,7 +140,6 @@ def edit_post(get_title, get_body, get_post_id, get_tags, get_comma_image_list, 
         published = 1
     else:
         published = 0
-    print published
     if check_if_post_exists(get_post_id):
         #some regex to replace some stuff. we don't want weird characters in the url - the url is for SEO
         import re
@@ -161,7 +150,6 @@ def edit_post(get_title, get_body, get_post_id, get_tags, get_comma_image_list, 
         update.execute()
         return get_post_id
     return False
-
 
 def search_by_tag(get_tag):
     """
@@ -183,10 +171,7 @@ def delete_post(get_post_id):
         return post.delete_instance()
     return False
 
-
 #User Data related database queries
-
-
 def update_all_data(get_title=None, get_subtitle=None, get_full_name=None, get_tags=None, get_footer_text=None):
     """
         updates all blog data
@@ -196,20 +181,15 @@ def update_all_data(get_title=None, get_subtitle=None, get_full_name=None, get_t
                           tags=tags, footer_text=get_footer_text).where(user_d.id == 0)
     query.execute()
 
-
 #Get user-configured data functions
-
-
 def get_user_data():
     query = user_d.get(user_d.id == 0)
     return query
-
 
 def get_tags():
     """returns tags in a comma-separated list"""
     query = user_d.get(user_d.id == 0)
     return query.tags
-
 
 def tag_array():
     """returns tags in an array """
@@ -218,22 +198,6 @@ def tag_array():
     except AttributeError:
         return None
 
-
 def get_password(get_username):
     query = user_d.get(user_d.username == get_username)
     return query.password
-
-
-def get_blog_title():
-    query = user_d.get(user_d.id == 0)
-    return query.blog_title
-
-
-def get_blog_subtitle():
-    query = user_d.get(user_d.id == 0)
-    return query.blog_subtitle
-
-
-def get_footer_text():
-    query = user_d.get(user_d.id == 0)
-    return query.footer_text
