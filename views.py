@@ -1,7 +1,6 @@
 from __future__ import division
 from collections import OrderedDict
 from flask import Blueprint, request, render_template, g, redirect, url_for, session, flash, jsonify
-from wtforms import BooleanField
 from login import user_login, update_login_details
 from peewee import DoesNotExist
 import config
@@ -16,6 +15,7 @@ import helper_funcs
 import image_mods
 import messages
 import exception_handling
+import edit_post_mods
 
 mod = Blueprint('blog', __name__, url_prefix='/admin/')
 
@@ -270,29 +270,22 @@ def add_post():
 @mod.route('edit/', methods=['GET', 'POST'])
 @decorators.requires_login
 def edit(post_id=None):
+    global images
     form = []
     page_content = []
-    images = []
     current_tags = []
     post_tags = []
+    page_title = []
     image_tagged_values = []
     tag_values = []
     if post_id:
-        class NewPostTags(forms.NewPost):
-            pass
-        post_tags = db_mods.tag_array()
-        if post_tags:
-            for name in post_tags:
-                setattr(NewPostTags, name, BooleanField(name))
         try:
             image_array = image_mods.image_array(post_id)
         except DoesNotExist:
             flash(messages.ERROR_POST_DOES_NOT_EXIST)
             return redirect(url_for('blog.edit'))
-        if image_array:
-            for im_name in image_array:
-                setattr(NewPostTags, im_name, BooleanField(""))
-        form = NewPostTags(request.form)
+        post_tags = db_mods.tag_array()
+        form = edit_post_mods.dynamic_form(image_array, post_tags)
         if post_tags:
             tag_values = helper_funcs.return_method_dict(form, post_tags)
         if image_array:
@@ -301,34 +294,27 @@ def edit(post_id=None):
         page_content = db_mods.get_all_visible_titles_and_ids()
         page_title = "Edit a Post"
     elif not request.method == 'POST' and post_id:
-        page_content = db_mods.get_post_content(post_id)
-        page_title = "Edit Post: " + page_content['title']
-        form.post_title.data = page_content['title']
-        form.post_body.data = page_content['body']
-        current_tags = page_content['tags']
-        # checks the checkbox if the tag is attached to the post
-        if post_tags and current_tags:
-            for tag in current_tags:
-                if tag in tag_values:
-                    tag_values[tag].data = 'y'
+        form, tag_values, page_content = edit_post_mods.return_updated_form_values(form,tag_values,post_tags,post_id)
         images = page_content['images']
-        page_content['body_html'] = blog_mods.get_html_content(page_content['body'])
-    if request.method == 'POST':
+        page_title = "Edit Post: " + page_content['title']
+    if request.method == 'POST' and post_id:
         if image_tagged_values:
             image_mods.remove_images(post_id, image_tagged_values)
         uploaded_images = image_mods.array_to_comma_list(image_mods.call_image_tool_posts(request.files))
         current_images = image_mods.array_to_comma_list(image_mods.image_array(post_id))
-        image_list = []
-        if uploaded_images:
-            image_list.append(uploaded_images)
-        if current_images:
-            image_list.append(current_images)
+        image_list = edit_post_mods.image_list_change(uploaded_images,current_images)
         image_list = image_mods.array_to_comma_list(image_list)
         if 'SavePublish' in request.form:
             db_mods.edit_post(form.post_title.data, form.post_body.data, post_id, tag_values, image_list, published=True)
             return redirect(url_for(url_settings.preview_url))
         db_mods.edit_post(form.post_title.data, form.post_body.data, post_id, tag_values, image_list)
-        return redirect(url_for('blog.index'))
+        image_array = image_mods.image_array(post_id)
+        form = edit_post_mods.dynamic_form(image_array, post_tags)
+        if image_array:
+            image_tagged_values = helper_funcs.return_method_dict(form, image_array)
+        form, tag_values, page_content = edit_post_mods.return_updated_form_values(form,tag_values,post_tags,post_id)
+        images = page_content['images']
+        page_title = "Edit Post: " + page_content['title']
     return render_template('edit.html', form=form, page_content=page_content, post_id=post_id,
                            tag_values=tag_values, images=images, tagged=current_tags, image_tags=image_tagged_values,
                            page_title=page_title)

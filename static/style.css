@@ -419,12 +419,15 @@ span.tags a:hover {
     text-align: center;
     margin: 0 auto;
 }
-
-.main {
+.content  {
+    display:block;
+    margin: 0 auto;
     max-width: 900px;
+}
+.main {
     margin: 0 auto;
     padding-left: 2em;
-    padding-top: 2em;
+    padding-top: 1em;
     padding-right: 2em;
 }
 

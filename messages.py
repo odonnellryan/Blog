@@ -18,6 +18,8 @@ ERROR_DATABASE_CONNECTION = "<p>Sorry, there seems to be a problem with the data
                             " MySQL have proven to be a safe choice for this type of application."
 ERROR_DATABASE_CONFIGURATION = "Sorry, we could not establish a database connection. There may be a problem with" \
                                " the user credentials and database information in your config file."
+ERROR_USER_ALREADY_CONFIGURED = "Sorry, but it seems there is already a user configured in your database. Please try to " \
+                                " see if you can delete the information and try again."
 ERROR_404 = "Sorry, but the page you're looking for can not be found."
 
 # general status messages

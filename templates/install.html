@@ -58,7 +58,7 @@
         {% endif %}
     </div>
 </div>
-<div class="pure-g-r main">
+<div class="pure-g-r main center">
     <div class="pure-u-1">
         {% for message in get_flashed_messages() %}
             <div class=flash>{{ message }}</div>
@@ -75,7 +75,7 @@
                 </p>
 
                 <form method=post action="{{ url_for('config.db_tables') }}" enctype="multipart/form-data"
-              class="pure-form pure-form-aligned center">
+              class="pure-form pure-form-aligned content center">
                     <dl>
                         {{ render_field(user_data_form.blog_title) }}
                         {{ render_field(user_data_form.blog_subtitle) }}

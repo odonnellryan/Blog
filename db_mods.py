@@ -111,6 +111,7 @@ def get_post_content(post_id):
             post['tags'] = blog_post.tags.split(",")
         except AttributeError:
             post['tags'] = None
+        post['created'] = blog_post.created_date
     return post
 
 def add_new_post(get_title, get_body, get_tags, get_comma_image_list=None):
@@ -178,17 +179,17 @@ def update_all_data(get_title=None, get_subtitle=None, get_full_name=None, get_t
     """
     tags = tag_parser(get_tags)
     query = user_d.update(blog_title=get_title, blog_subtitle=get_subtitle, full_name=get_full_name,
-                          tags=tags, footer_text=get_footer_text).where(user_d.id == 0)
+                          tags=tags, footer_text=get_footer_text)
     query.execute()
 
 #Get user-configured data functions
 def get_user_data():
-    query = user_d.get(user_d.id == 0)
+    query = user_d.get()
     return query
 
 def get_tags():
     """returns tags in a comma-separated list"""
-    query = user_d.get(user_d.id == 0)
+    query = user_d.get()
     return query.tags
 
 def tag_array():

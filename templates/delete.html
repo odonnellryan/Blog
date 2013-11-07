@@ -4,7 +4,7 @@
     {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
 
     {% if post_id %}
-        <div class="pure-u-1 center">
+        <div class="pure-u-1 center content">
             <script src="{{ url_for('static', filename='js/render_html.js') }}"></script>
             {% from "macro.html" import render_checkboxes %}
             <form method=post action="{{ url_for('blog.delete', post_id=post_id) }}"

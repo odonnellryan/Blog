@@ -32,7 +32,10 @@ def page_not_found(e):
             return redirect(url_for(redirect_page))
         return render_template(('404.html'), error_type="MySQL", error_message=error, user_data=user_data)
     if user_data:
-        user_data.tags = user_data.tags.split(',')
+        try:
+            user_data.tags = user_data.tags.split(',')
+        except AttributeError:
+            user_data.tags = None
     return render_template('404.html', user_data=user_data, error_message=messages.ERROR_404), 404
 
 app.testing = True

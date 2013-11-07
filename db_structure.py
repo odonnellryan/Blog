@@ -1,4 +1,7 @@
-from peewee import IntegerField, CharField, TextField, Model, BlobField, MySQLDatabase, SqliteDatabase, PostgresqlDatabase, ImproperlyConfigured
+from peewee import IntegerField, TextField, Model, BlobField, \
+    MySQLDatabase, SqliteDatabase, PrimaryKeyField, PostgresqlDatabase, ImproperlyConfigured, DateField
+
+import datetime
 import config
 
 def database():
@@ -17,17 +20,17 @@ class Blog(Model):
         database = database()
 
 class Posts(Blog):
-    id = IntegerField(primary_key=True)
+    id = PrimaryKeyField()
     title = TextField(null=True, default=None)
     url_title = TextField(null=True, default=None)
     body = TextField(null=True, default=None)
     visible = IntegerField(null=True, default=None)
     tags = TextField(null=True, default=None)
+    created_date = DateField(default=datetime.date.today())
     images = TextField(null=True, default=None)
 
-
 class UserData(Blog):
-    id = IntegerField(primary_key=True)
+    id = PrimaryKeyField()
     full_name = TextField(null=True, default=None)
     footer_text = TextField(null=True, default=None)
     blog_subtitle = TextField(null=True, default=None)

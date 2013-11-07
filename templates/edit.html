@@ -1,8 +1,47 @@
-{% extends "index.html" %}
-{% block body %}
-
-    {% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
-
+    <html>
+<head>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='pure-grid.css') }}">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='forms.css') }}">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+    <link href='http://fonts.googleapis.com/css?family=Lato:400,900' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='imgs/favicon.ico') }}">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type=text/javascript>$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+    <title>
+        {{ user_data.blog_title }} :: {{ page_title }}
+    </title>
+</head>
+<body>
+<div class="pure-g-r">
+    <div class="pure-u-1-5 header-color-box red"></div>
+    <div class="pure-u-1-5 header-color-box blue"></div>
+    <div class="pure-u-1-5 header-color-box light-blue"></div>
+    <div class="pure-u-1-5 header-color-box dark-blue"></div>
+    <div class="pure-u-1-5 header-color-box orange"></div>
+</div>
+<div class="pure-g-r ">
+    <div class="pure-u-1-4"></div>
+    <div class="pure-u-1-4"></div>
+    <div class="pure-u-1-4"></div>
+    <div class="pure-u-1-4 login-bar">
+        {% if logged_in %}
+            <a class="logout" href="{{ url_for('blog.logout') }}">Logout</a>
+            <a class="logout" href="{{ url_for('blog.index') }}">Admin</a>
+            <a class="logout" href="{{ url_for('blog.preview') }}">Preview</a>
+        {% endif %}
+    </div>
+</div>
+<div class="pure-g-r main">
+    <div class="pure-u-1 center">
+        {% for message in get_flashed_messages() %}
+            <div>
+                <p class="underline">{{ message | safe}}</p>
+                <p></p>
+            </div>
+        {% endfor %}
+    </div>
+{% for errors in error %}<p class=error><strong>Error:</strong> {{ errors }}{% endfor %}
     {% if post_id %}
         {% from "macro.html" import render_checkboxes %}
         {% from "macro.html" import render_field %}
@@ -73,4 +112,6 @@
             </p>
         </div>
     {% endif %}
-{% endblock %}
+</div>
+</body>
+</html>

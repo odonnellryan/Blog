@@ -27,7 +27,10 @@ def db_tables(tag=None):
                 image_mods.image_tool_logo(request.files)
                 db_structure.UserData.create_table()
                 db_structure.Posts.create_table()
-                login.set_login_details(login_form.username.data, login_form.password.data, login_form.confirm_password.data)
+                try:
+                    login.set_login_details(login_form.username.data, login_form.password.data, login_form.confirm_password.data)
+                except ValueError:
+                    flash(messages.ERROR_USER_ALREADY_CONFIGURED)
                 db_mods.update_all_data(user_data_form.blog_title.data, user_data_form.blog_subtitle.data,
                                         user_data_form.full_name.data, user_data_form.tags.data,
                                         user_data_form.footer_text.data)

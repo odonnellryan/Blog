@@ -29,9 +29,10 @@ def update_login_details(get_username, get_password, set_username=None, set_pass
 
 def set_login_details(set_username, set_password, confirm_password):
     if set_password == confirm_password:
-        print set_username, set_password, confirm_password
         password = pwd_context.encrypt(set_password)
         query = user_d()
+        if user_d.select().exists():
+            raise ValueError
         query.username = set_username
         query.password = password
         query.save()

@@ -1,7 +1,7 @@
 {% extends "index.html" %}
 {% block body %}
     {% from "macro.html" import render_field %}
-    <div class="pure-u-1 center">
+    <div class="pure-u-1 content center">
         <form method=post action="{{ url_for('blog.login') }}" class="pure-form pure-form-aligned">
             <dl>
                 {{ render_field(form.username) }}
