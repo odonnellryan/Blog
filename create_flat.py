@@ -47,11 +47,10 @@ def generate_blog_pages(page=1):
 @f_mod.route('tagged/<tag>/', methods=['GET', 'POST'])
 @f_mod.route('tagged/', methods=['GET', 'POST'])
 def tagged(tag=None):
-    tags = db_mods.tag_array()
     posts = None
     if tag:
         posts = db_mods.search_by_tag(tag)
-    return render_template('tagged.html', tags=tags, posts=posts, page_title=tag)
+    return render_template('preview.html', posts=posts, page_title=tag)
 
 
 @f_mod.route('post/<post_id>/<post_title>/', methods=['GET', 'POST'])

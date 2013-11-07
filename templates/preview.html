@@ -22,9 +22,10 @@
                         <a id="{{ post.title }}" href="{{ url_for(preview_post_url, post_id=post.id, post_title=post.url_title) }}">
                             {{ post.title }}
                         </a>
-                            {{ post.create_date }}
+
                     </h1>
                 </span>
+            Posted:  {{ post.created_date}}
             </div>
             <div class="pure-u-1 post-body">
                             <span class=post-body>
