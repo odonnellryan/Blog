@@ -25,7 +25,7 @@ def inject_urls():
 def page_not_found(e):
     try:
         user_data = db_mods.get_user_data()
-    except exception_handling.database_exceptions, e:
+    except exception_handling.database_exceptions as e:
         error, redirect_page = exception_handling.database_exception_handler(e)
         user_data = None
         if redirect_page:

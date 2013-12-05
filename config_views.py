@@ -1,7 +1,7 @@
 from flask import Blueprint, redirect, url_for, flash, request, render_template
 import db_structure
 import db_mods
-import exception_handling
+from exception_handling import database_exceptions
 import forms
 import messages
 import image_mods
@@ -20,7 +20,7 @@ def db_tables(tag=None):
         db_mods.get_user_data()
         return redirect(url_for('blog.index'))
 
-    except exception_handling.database_exceptions, e:
+    except database_exceptions as e:
         #just a safety to ensure this can only be run if this is thrown (aka, this is the table-not-existing thing)
         if 1146 in e.args:
             if request.method == 'POST' and login_form.validate():
