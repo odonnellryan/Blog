@@ -12,18 +12,20 @@ tagged_url = 'f_blog.tagged'
 preview_url = 'f_blog.generate_blog_pages'
 preview_post_url = "f_blog.preview_post"
 
-try:
-    user_data = db_mods.get_user_data()
-    if user_data.tags:
-        user_data.tags = user_data.tags.split(',')
-except exception_handling.database_exceptions:
-    user_data = None
+
 
 f_app.debug = True
 f_app.testing = True
 
 @f_mod.context_processor
 def inject_urls():
+    try:
+        user_data = db_mods.get_user_data()
+        if user_data.tags:
+            user_data.tags = user_data.tags.split(',')
+    except exception_handling.database_exceptions:
+        user_data = None
+    print user_data.tags
     """
     sets variables that are used in each view. the g object is already passed to the view, so these can
     be factored out, but i left them like this for now.
