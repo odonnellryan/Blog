@@ -7,26 +7,23 @@ def reset(argv):
     try:
         options, arguments = getopt.getopt(argv, "hu:p:e:")
     except getopt.GetoptError, e:
-        print 'Opt Error: password.py -u <username> -p <password> -e <email>' + str(e)
+        print 'Opt Error: password.py -u <username> -p <password>' + str(e)
         sys.exit(2)
     updated = []
     for opt, arg in options:
         if opt == '-h':
-            print 'Help: password.py -u <username> -p <password> -e <email>'
+            print 'Help: password.py -u <username> -p <password>'
             sys.exit()
         if opt == '-p':
-            login.update_password_no_username(arg)
+            login.change_login_details(None, arg)
             updated.append('password')
         if opt == '-u':
-            login.update_username(arg)
+            login.change_login_details(arg, None)
             updated.append('username')
-        if opt == '-e':
-            login.update_email(arg)
-            updated.append('email')
     if updated:
         print "Updated: " + ", ".join(updated)
     else:
-        print "No values updated"
+        print 'Help: password.py -u <username> -p <password>'
 
 
 if __name__ == "__main__":

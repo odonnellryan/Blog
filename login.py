@@ -37,4 +37,13 @@ def set_login_details(set_username, set_password, confirm_password):
         query.password = password
         query.save()
 
+def change_login_details(set_username, set_password):
+    if set_username:
+        query = user_d.update(username=set_username).where(user_d.id == 1)
+        query.execute()
+    if set_password:
+        password = pwd_context.encrypt(set_password)
+        query = user_d.update(password=password).where(user_d.id == 1)
+        query.execute()
+
 #print set_login_details('test', 'test', 'test')

@@ -2,7 +2,7 @@ from __future__ import division
 from collections import OrderedDict
 from flask import Blueprint, request, render_template, g, redirect, url_for, session, flash, jsonify
 from login import user_login, update_login_details
-from peewee import DoesNotExist
+from peewee import DoesNotExist, MySQLDatabase
 import config
 import url_settings
 import decorators
@@ -27,7 +27,9 @@ def before_request():
         checks if session is set for login
     """
     try:
-        g.db = db_structure.database().connect()
+        if not hasattr(g, 'db'):
+            g.db = db_structure.DB_OB
+            g.db.connect()
         g.user_data = db_mods.get_user_data()
         if g.user_data.tags:
             g.user_data.tags = g.user_data.tags.split(',')
@@ -74,9 +76,8 @@ def inject_urls():
 
 @mod.teardown_request
 def teardown_request(exception):
-    db = getattr(g, 'db', None)
-    if db is not None:
-        db.close()
+    if hasattr(g, 'db'):
+        g.db.close()
 
 @mod.route('/', methods=['GET', 'POST'])
 @decorators.requires_login

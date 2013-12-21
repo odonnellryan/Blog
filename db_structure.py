@@ -15,6 +15,8 @@ def database():
         raise ImproperlyConfigured
     return database
 
+DB_OB = database()
+
 class Blog(Model):
     class Meta:
         database = database()
