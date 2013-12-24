@@ -225,16 +225,18 @@ def login():
     if g.logged_in:
         return redirect(url_for('blog.index'))
     form = forms.Login(request.form)
-    if request.method == 'POST' and form.validate():
-        try:
-            if user_login(form.username.data, form.password.data):
-                session['LOGGED_IN'] = True
-                return redirect(url_for('blog.index'))
-            else:
-                flash(messages.ERROR_USER_INFO_INCORRECT)
-        except DoesNotExist:
+    if not request.method == 'POST' and form.validate():
+        return render_template('login.html', form=form, page_title="Login")
+    try:
+        if user_login(form.username.data, form.password.data):
+            session['LOGGED_IN'] = True
+            return redirect(url_for('blog.index'))
+        else:
             flash(messages.ERROR_USER_INFO_INCORRECT)
+    except DoesNotExist:
+        flash(messages.ERROR_USER_INFO_INCORRECT)
     return render_template('login.html', form=form, page_title="Login")
+    
 
 @mod.route('forgot_password/', methods=['GET', 'POST'])
 def forgot_password():
@@ -342,17 +344,16 @@ def delete(post_id=None):
 @decorators.requires_login
 def commit():
     form = forms.Commit(request.form)
+    if not request.method == 'POST':
+        return render_template('commit.html', form=form, page_title="Commit your blog to Flatfile")
+    if form.commit.data == True:
+        create_flat.freezer.freeze()
+        flash('Successfully Committed Your Files')
+        return redirect(url_for('blog.index'))
+    else:
+        flash("Please click Commit to Flat Files if you wish to Commit your changes.")
+        return redirect(url_for('blog.commit'))
 
-    if request.method == 'POST':
-        if form.commit.data == True:
-            create_flat.freezer.freeze()
-            flash('Successfully Committed Your Files')
-            return redirect(url_for('blog.index'))
-        else:
-            flash("Please click Commit to Flat Files if you wish to Commit your changes.")
-            return redirect(url_for('blog.commit'))
-
-    return render_template('commit.html', form=form, page_title="Commit your blog to Flatfile")
 
 #below are the two views to work with jquery. these views process the text, html, and markup to produce valid html
 #can probably use one of these rather than two..
