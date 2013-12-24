@@ -5,6 +5,9 @@ from flask import request
 from wtforms import BooleanField
 
 def return_updated_form_values(form, tag_values, post_tags, post_id):
+    """
+        this is so that the preview is properly displayed on the edit page
+    """
     page_content = db_mods.get_post_content(post_id)
     form.post_title.data = page_content['title']
     form.post_body.data = page_content['body']
@@ -26,8 +29,9 @@ def image_list_change(uploaded_images=None, current_images=None):
     return image_list
 
 def dynamic_form(image_array, post_tags):
-    #some stuff to make sure the correct tags are highlighted, etc.. dynamic form generation blah blah blah
-    # class inside a function? hmm.
+    """
+        this is for us to modify the form to dynamically make changes (check boxes, add content, etc.)
+    """
     class NewPostTags(forms.NewPost):
                 pass
     if post_tags:

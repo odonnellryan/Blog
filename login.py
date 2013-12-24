@@ -18,14 +18,7 @@ def update_login_details(get_username, get_password, set_username=None, set_pass
     if set_password is not confirm_password:
         return False
     if user_login(get_username, get_password):
-        if set_username:
-            query = user_d.update(username=set_username).where(user_d.username == get_username)
-            query.execute()
-            get_username = set_username
-        if set_password:
-            password = pwd_context.encrypt(set_password)
-            query = user_d.update(password=password).where(user_d.username == get_username)
-            query.execute()
+        change_login_details(set_username, set_password)
 
 def set_login_details(set_username, set_password, confirm_password):
     if set_password == confirm_password:
@@ -37,7 +30,7 @@ def set_login_details(set_username, set_password, confirm_password):
         query.password = password
         query.save()
 
-def change_login_details(set_username, set_password):
+def change_login_details(set_username=None, set_password=None):
     if set_username:
         query = user_d.update(username=set_username).where(user_d.id == 1)
         query.execute()
@@ -45,5 +38,3 @@ def change_login_details(set_username, set_password):
         password = pwd_context.encrypt(set_password)
         query = user_d.update(password=password).where(user_d.id == 1)
         query.execute()
-
-#print set_login_details('test', 'test', 'test')
