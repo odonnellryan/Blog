@@ -27,9 +27,8 @@ def before_request():
         checks if session is set for login
     """
     try:
-        if not hasattr(g, 'db'):
-            g.db = db_structure.DB_OB
-            g.db.connect()
+        g.db = db_structure.DB_OB
+        g.db.connect()
         g.user_data = db_mods.get_user_data()
         if g.user_data.tags:
             g.user_data.tags = g.user_data.tags.split(',')
@@ -76,8 +75,7 @@ def inject_urls():
 
 @mod.teardown_request
 def teardown_request(exception):
-    if hasattr(g, 'db'):
-        g.db.close()
+    g.db.close()
 
 @mod.route('/', methods=['GET', 'POST'])
 @decorators.requires_login

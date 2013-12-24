@@ -19,7 +19,7 @@ DB_OB = database()
 
 class Blog(Model):
     class Meta:
-        database = database()
+        database = DB_OB
 
 class Posts(Blog):
     id = PrimaryKeyField()
