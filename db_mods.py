@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import db_structure
+from peewee import DoesNotExist
 
 blog = db_structure.Posts
 user_d = db_structure.UserData
@@ -41,7 +42,10 @@ def get_all_titles_and_ids():
     return posts
 
 def get_all_visible_titles_and_ids():
-    posts = OrderedDict([post.id, post.title] for post in blog.select().where(blog.visible==1).order_by(blog.id.desc()))
+    try:
+        posts = OrderedDict([post.id, post.title] for post in blog.select().where(blog.visible==1).order_by(blog.id.desc()))
+    except DoesNotExist:
+        posts = None
     return posts
 
 def get_latest_ten_posts():
