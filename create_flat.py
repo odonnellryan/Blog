@@ -19,17 +19,17 @@ f_app.testing = True
 
 @f_mod.context_processor
 def inject_urls():
+    """
+        sets variables that are used in each view. the g object is already passed to the view, so these can
+        be factored out, but i left them like this for now.
+    """
     try:
         user_data = db_mods.get_user_data()
         if user_data.tags:
             user_data.tags = user_data.tags.split(',')
     except exception_handling.database_exceptions:
         user_data = None
-    print user_data.tags
-    """
-    sets variables that are used in each view. the g object is already passed to the view, so these can
-    be factored out, but i left them like this for now.
-    """
+
     user_data.footer_text = blog_mods.get_html_content(user_data.footer_text)
     return dict(tagged_url=tagged_url, preview_url=preview_url,preview_post_url=preview_post_url, user_data=user_data,
                 render_html=blog_mods.get_html_content, page_title=user_data.blog_subtitle)

@@ -277,6 +277,7 @@ def edit(post_id=None):
     current_tags = []
     post_tags = []
     page_title = []
+    images = []
     image_tagged_values = []
     tag_values = []
     if post_id:
