@@ -1,5 +1,5 @@
 $(function () {
-    $('#post_body').on('change keyup paste mouseup',
+    $('#post_body').on('change keyup mouseup',
         function () {
             $.getJSON($SCRIPT_ROOT + '/admin/_render_temp_body/', {
                     post_body: $('textarea[name="post_body"]').val()},
@@ -12,7 +12,7 @@ $(function () {
             return false;
         });
 
-    $('#post_title').on('change keyup paste mouseup',
+    $('#post_title').on('change keyup mouseup',
         function () {
             $('#render_title').html($('input[name="post_title"]').val());
             if($('input[name="post_title"]').val() == "") {
